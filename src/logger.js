@@ -12,16 +12,22 @@
 
 /* eslint-disable no-underscore-dangle */
 
+const path = require('path');
 const fs = require('fs');
 const { Writable } = require('stream');
 const bunyan = require('bunyan');
+const dotenv = require('dotenv');
 const Bunyan2Loggly = require('bunyan-loggly');
 const BunyanSyslog = require('@tripod/bunyan-syslog');
 
-require('dotenv').config();
-
-// default to simple log format
-process.env.LOG_FORMAT = process.env.LOG_FORMAT || 'simple';
+const config = {
+  ...{
+    LOG_LEVEL: 'info',
+    LOG_FORMAT: 'simple',
+  },
+  ...dotenv.parse(path.resolve(process.cwd(), '.env')),
+  ...process.env,
+};
 
 const LEVELS = {
   10: 'TRACE',
@@ -132,7 +138,7 @@ function addLogglyStream(logger, params) {
   const bufferTimeout = 500;
   logger.addStream({
     type: 'raw',
-    level: process.env.LOG_LEVEL || 'info',
+    level: config.LOG_LEVEL,
     stream: new Bunyan2Loggly(logglyConfig, bufferLength, bufferTimeout),
   });
   return true;
@@ -159,7 +165,7 @@ function addPaperTrailStream(logger, params) {
   logger.addStream({
     name: 'PapertrailStream',
     type: 'raw',
-    level: process.env.LOG_LEVEL || 'info',
+    level: config.LOG_LEVEL,
     stream: new SimpleFormat({}, syslogStream),
   });
 
@@ -206,7 +212,7 @@ module.exports = function getLogger(params, logger) {
       name: pkgJson.name,
       serializers,
       streams: [{
-        level: process.env.LOG_LEVEL || 'info',
+        level: config.LOG_LEVEL,
         type: 'raw',
         stream: new SimpleFormat({
           wskLog: true,

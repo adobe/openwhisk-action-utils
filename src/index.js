@@ -1,5 +1,3 @@
-#!/usr/bin/env node
-
 /*
  * Copyright 2019 Adobe. All rights reserved.
  * This file is licensed to you under the Apache License, Version 2.0 (the "License");
@@ -12,6 +10,12 @@
  * governing permissions and limitations under the License.
  */
 
-const CLI = require('./cli.js');
+const logger = require('./logger.js');
+const logRequest = require('./log-request.js');
+const expressify = require('./expressify.js');
 
-new CLI().run(process.argv.slice(2));
+module.exports = {
+  logger,
+  logRequest,
+  expressify,
+};
