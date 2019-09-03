@@ -11,7 +11,7 @@
  */
 
 /* eslint-env mocha */
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle,camelcase */
 
 const assert = require('assert');
 const express = require('express');
@@ -45,6 +45,38 @@ describe('Expressify', () => {
       statusCode: 200,
     });
   });
+
+
+  // eslint-disable-next-line no-restricted-syntax
+  for (const __ow_path of [null, undefined, '', 'missing']) {
+    it(`defaults to / for ${__ow_path === '' ? 'empty' : __ow_path} path`, async () => {
+      const app = express();
+      app.get('/', (req, res) => {
+        res.send('ok');
+      });
+      const params = {
+        __ow_path,
+        __ow_method: 'get',
+        __ow_headers: {},
+      };
+      if (__ow_path === 'missing') {
+        delete params.__ow_path;
+      }
+
+      // eslint-disable-next-line no-await-in-loop
+      const result = await expressify(app)(params);
+      assert.deepEqual(result, {
+        body: 'ok',
+        headers: {
+          'content-length': '2',
+          'content-type': 'text/html; charset=utf-8',
+          etag: 'W/"2-eoX0dku9ba8cNUXvu/DyeabcC+s"',
+          'x-powered-by': 'Express',
+        },
+        statusCode: 200,
+      });
+    });
+  }
 
   it('handles text/plain POST body', async () => {
     const app = express();
