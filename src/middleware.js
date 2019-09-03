@@ -11,7 +11,57 @@
  */
 const crypto = require('crypto');
 
-module.exports = function logRequest(logger) {
+/**
+ * Error handler.
+ *
+ *
+ * ```
+ * ...
+ * // install last
+ * app.use(errorHandler(log));
+ * ```
+ */
+function errorHandler(log) {
+  return (err, req, res, next) => {
+    log.error(err.message);
+    if (log.level() < 20) {
+      // only log on trace level
+      log.error(err.stack);
+    }
+    if (!res.headersSent) {
+      res.status(err.status || 500).send();
+    }
+    next();
+  };
+}
+
+/**
+ * Ensures cache control.
+ *
+ * ```
+ * app.use(cacheControl());
+ * ```
+ */
+function cacheControl(value = 'no-store, private, must-revalidate') {
+  return (req, res, next) => {
+    if (!res.get('cache-control')) {
+      res.set('cache-control', value);
+    }
+    next();
+  };
+}
+
+/**
+ * Creates a bunyan child logger for the request and adds it to the request.
+ * @param {Bunyan} logger - the bunyan logger
+ *
+ * ```
+ * // install first
+ * app.use(logRequest(log));
+ * ...
+ * ```
+ */
+function logRequest(logger) {
   return (req, res, next) => {
     // Use X-Request-ID from request if it is set, otherwise generate a uuid
     req.id = req.headers['x-request-id']
@@ -43,4 +93,23 @@ module.exports = function logRequest(logger) {
     });
     next();
   };
+}
+
+/**
+ * Wraps the route middleware so it can bind the params and catch potential promise rejections
+ * during the async invocation.
+ *
+ * @param fn {Function} the handler
+ * @param params {object} action params
+ * @returns {Function} the expressjs router function
+ */
+function asyncHandler(fn, params) {
+  return (req, res, next) => (Promise.resolve(fn(params, req, res, next)).catch(next));
+}
+
+module.exports = {
+  errorHandler,
+  cacheControl,
+  logRequest,
+  asyncHandler,
 };

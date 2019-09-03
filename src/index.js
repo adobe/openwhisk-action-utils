@@ -11,11 +11,16 @@
  */
 
 const logger = require('./logger.js');
-const logRequest = require('./log-request.js');
+const {
+  errorHandler, cacheControl, logRequest, asyncHandler,
+} = require('./middleware.js');
 const expressify = require('./expressify.js');
 
 module.exports = {
   logger,
   logRequest,
+  errorHandler,
+  cacheControl,
+  asyncHandler,
   expressify,
 };

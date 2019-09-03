@@ -15,7 +15,7 @@ const serverless = require('serverless-http');
 
 module.exports = function expressify(app) {
   return async (params) => {
-    const requestBodyAdapter = async (req, res) => {
+    const requestBodyAdapter = async (req, res, next) => {
       // `serverless-http` converts the request.body by default to a buffer,
       // which not all express apps can deal with. so emulate data again.
       if (req.body && Buffer.isBuffer(req.body)) {
@@ -24,7 +24,7 @@ module.exports = function expressify(app) {
         req.emit('data', data);
         req.emit('end');
       }
-      return app(req, res);
+      return app(req, res, next);
     };
 
     const handler = serverless(requestBodyAdapter, {
