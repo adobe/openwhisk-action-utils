@@ -1,3 +1,11 @@
+# [1.1.0](https://github.com/adobe/openwhisk-action-utils/compare/v1.0.0...v1.1.0) (2019-09-03)
+
+
+### Features
+
+* **expressify:** ensure empty or missing __ow_path defaults to '/' ([ed4f15e](https://github.com/adobe/openwhisk-action-utils/commit/ed4f15e))
+* **utils:** add commonly needed middleware ([d593933](https://github.com/adobe/openwhisk-action-utils/commit/d593933))
+
 # 1.0.0 (2019-08-19)
 
 
