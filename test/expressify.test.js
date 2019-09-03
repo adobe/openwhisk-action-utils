@@ -16,7 +16,6 @@
 const assert = require('assert');
 const express = require('express');
 const bodyParser = require('body-parser');
-
 const expressify = require('../src/expressify.js');
 
 describe('Expressify', () => {
