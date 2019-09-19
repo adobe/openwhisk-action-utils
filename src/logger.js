@@ -10,42 +10,56 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable no-underscore-dangle */
+/* eslint-disable no-underscore-dangle,no-console */
 
 const path = require('path');
 const fs = require('fs');
-const { Writable } = require('stream');
 const bunyan = require('bunyan');
 const dotenv = require('dotenv');
-const Bunyan2Loggly = require('bunyan-loggly');
-const BunyanSyslog = require('@tripod/bunyan-syslog');
+const {
+  Bunyan2HelixLog, rootLogger, ConsoleLogger, messageFormatSimple,
+} = require('@adobe/helix-log');
+const createLogglyStream = require('./logger-loggly');
+const createPaperTrailStream = require('./logger-papertrail');
+const createCoralogixLogger = require('./logger-coralogix');
 
-const config = {
-  ...{
-    LOG_LEVEL: 'info',
-    LOG_FORMAT: 'simple',
+let _config = null;
+function config() {
+  if (!_config) {
+    _config = {
+      ...{
+        LOG_LEVEL: 'info',
+        LOG_FORMAT: 'simple',
+      },
+      ...dotenv.parse(path.resolve(process.cwd(), '.env')),
+      ...process.env,
+    };
+    try {
+      const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
+      _config.pkgName = pkgJson.name;
+    } catch (e) {
+      _config.pkgName = 'n/a';
+    }
+  }
+  return _config;
+}
+
+const openhwiskConsoleLogger = new ConsoleLogger({
+  level: 'info',
+  stream: process.stdout,
+  formatter: (msg, opts) => {
+    // remove last message argument if object. this suppresses the bunyan fields being
+    // logged to the activation logs. once helix-log supports proper data logging,
+    // this can be simplified.
+    if (msg.length > 0) {
+      const lst = msg[msg.length - 1];
+      if (typeof lst === 'object' && !(lst instanceof Error)) {
+        msg.splice(-1, 1);
+      }
+    }
+    return messageFormatSimple(msg, opts);
   },
-  ...dotenv.parse(path.resolve(process.cwd(), '.env')),
-  ...process.env,
-};
-
-const LEVELS = {
-  10: 'TRACE',
-  20: 'DEBUG',
-  30: 'INFO ',
-  40: 'WARN ',
-  50: 'ERROR',
-  60: 'FATAL',
-};
-
-const SYSLOG_LEVELS = {
-  10: 7,
-  20: 7,
-  30: 6,
-  40: 4,
-  50: 3,
-  60: 0,
-};
+});
 
 const serializers = {
   res: (res) => {
@@ -62,167 +76,92 @@ const serializers = {
   err: bunyan.stdSerializers.err,
 };
 
-function safeCycles() {
-  const seen = [];
-  function bunyanCycles(_, v) {
-    if (!v || typeof (v) !== 'object') {
-      return (v);
-    }
-    if (seen.indexOf(v) !== -1) {
-      return ('[Circular]');
-    }
-    seen.push(v);
-    return (v);
-  }
-
-  return (bunyanCycles);
-}
-
-class SimpleFormat extends Writable {
-  constructor(options = {}, base = process.stdout) {
-    super();
-    this.out = base;
-    this.wskLog = options.wskLog;
-  }
-
-  write(rec) {
-    const {
-      hostname,
-      level,
-      time,
-      req,
-      res,
-      ow: {
-        activationId: id = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        actionName: name = 'unknown',
-      },
-    } = rec;
-    let {
-      msg,
-    } = rec;
-    if (this.wskLog) {
-      const line = `${LEVELS[level]} - ${msg}\n`;
-      this.out.write(line);
-    } else {
-      // use _send directly, so we can avoid the json serialization of 'rec'
-      const date = new Date(time).toJSON();
-      if (req || res) {
-        msg = JSON.stringify({
-          req,
-          res,
-        }, safeCycles(), 2);
-      }
-      const line = `<${8 + SYSLOG_LEVELS[level]}>${date} ${hostname} ${name}[0]:${id.substring(0, 16)} ${LEVELS[level]} ${msg}`;
-      this.out._send(line);
-    }
-  }
-}
-
-function addLogglyStream(logger, params) {
-  if (!(params && params.LOGGLY_SUBDOMAIN && params.LOGGLY_TOKEN)) {
+function addLogger(parent, name, createFN, cfg, params) {
+  const logger = createFN(cfg, params);
+  if (!logger) {
     return false;
   }
-
-  // check if not already added
-  if (logger.streams.find((s) => s.name === 'LogglyStream')) {
-    // eslint-disable-next-line no-console
-    console.log('(Loggly stream already added)');
+  if (parent.loggers.has(name)) {
     return true;
   }
-
-  const logglyConfig = {
-    token: params.LOGGLY_TOKEN,
-    subdomain: params.LOGGLY_SUBDOMAIN,
-  };
-  const bufferLength = 1000;
-  const bufferTimeout = 500;
-  logger.addStream({
-    type: 'raw',
-    level: config.LOG_LEVEL,
-    stream: new Bunyan2Loggly(logglyConfig, bufferLength, bufferTimeout),
-  });
+  parent.loggers.set(name, logger);
   return true;
 }
 
-function addPaperTrailStream(logger, params) {
-  if (!(params && params.PAPERTRAIL_HOST && params.PAPERTRAIL_PORT)) {
+function addStream(logger, createFN, cfg, params) {
+  const stream = createFN(cfg, params);
+  if (!stream) {
     return false;
   }
-
-  // check if not already added
-  if (logger.streams.find((s) => s.name === 'PapertrailStream')) {
-    // eslint-disable-next-line no-console
-    console.log('(Papertrail stream already added)');
+  if (logger.streams.find((s) => s.name === stream.name)) {
     return true;
   }
-
-  const syslogStream = BunyanSyslog.createBunyanStream({
-    type: 'tcp',
-    host: params.PAPERTRAIL_HOST,
-    port: Number.parseInt(params.PAPERTRAIL_PORT, 10),
-  });
-
-  logger.addStream({
-    name: 'PapertrailStream',
-    type: 'raw',
-    level: config.LOG_LEVEL,
-    stream: new SimpleFormat({}, syslogStream),
-  });
-
+  logger.addStream(stream);
   return true;
 }
 
-function initLogger(logger, params) {
+/**
+ * Initializes a helix-log logger for use with an openwhisk action.
+ * It ensures that, the given logger has a default console logger configured. It also looks for
+ * credential params and tries to add additional external logger (eg. coralogix).
+ *
+ * @param {*} params                        - the openwhisk action params
+ * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
+ *                                            `rootLogger`.
+ */
+function setupHelixLogger(params, logger = rootLogger) {
+  // replace default logger with our own console logger
+  logger.loggers.set('default', openhwiskConsoleLogger);
+
+  if (addLogger(logger, 'CoralogixLogger', createCoralogixLogger, config(), params)) {
+    // eslint-disable-next-line no-console
+    console.log('configured coralogix logger.');
+  }
+
+  return logger;
+}
+
+/**
+ * Creates a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+ * stream to the given helix logger.
+ * It will also setup external log streams (loggly or papertrail) if the respective credentials
+ * are available.
+ *
+ * Please note that those external streams are not support by helix-log and therefore only
+ * work with this bunyan logger.
+ *
+ * @param {*} params                   - the openwhisk action params
+ * @param {Logger} [logger=rootLogger] - a helix multi logger. defaults to the helix `rootLogger`.
+ */
+function createBunyanLogger(params, logger = rootLogger) {
+  const cfg = config();
+  const bunyanLogger = bunyan.createLogger({
+    name: cfg.pkgName,
+    serializers,
+    streams: [{
+      name: 'Bunyan2HelixLog',
+      level: config.LOG_LEVEL,
+      type: 'raw',
+      stream: new Bunyan2HelixLog(logger),
+    }],
+  });
+
   // eslint-disable-next-line no-param-reassign
-  logger.fields.ow = {
+  bunyanLogger.fields.ow = {
     activationId: process.env.__OW_ACTIVATION_ID,
     actionName: process.env.__OW_ACTION_NAME,
   };
 
-  const logs = [];
-  if (addLogglyStream(logger, params)) {
-    logs.push('loggly');
+  if (addStream(bunyanLogger, createLogglyStream, cfg, params)) {
+    console.log('configured loggly logger.');
   }
-  if (addPaperTrailStream(logger, params)) {
-    logs.push('papertrail');
+  if (addStream(bunyanLogger, createPaperTrailStream, cfg, params)) {
+    console.log('configured papertrail logger.');
   }
-
-  if (logs.length === 0) {
-    logger.info('no external loggers configured.');
-  } else {
-    // eslint-disable-next-line no-console
-    console.log('configured external logger(s): ', logs);
-
-    // eslint-disable-next-line no-param-reassign
-    logger.flush = async function flush() {
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve();
-        }, 5000);
-      });
-    };
-  }
+  return bunyanLogger;
 }
 
-module.exports = function getLogger(params, logger) {
-  if (!logger) {
-    const pkgJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
-    // eslint-disable-next-line no-param-reassign
-    logger = bunyan.createLogger({
-      name: pkgJson.name,
-      serializers,
-      streams: [{
-        level: config.LOG_LEVEL,
-        type: 'raw',
-        stream: new SimpleFormat({
-          wskLog: true,
-        }),
-      }],
-    });
-  }
-
-  initLogger(logger, params);
-  return logger;
+module.exports = {
+  setupHelixLogger,
+  createBunyanLogger,
 };
-
-module.exports.init = initLogger;
