@@ -13,10 +13,25 @@
 /* eslint-disable no-underscore-dangle */
 
 const {
-  CoralogixLogger, messageFormatJson,
+  CoralogixLogger, messageFormatJson, JsonifyForLog,
 } = require('@adobe/helix-log');
 
+const http = require('http');
+
 let coralogixLogger = null;
+
+JsonifyForLog.impl(http.IncomingMessage, (req) => ({
+  method: req.method,
+  url: req.url,
+  headers: req.headers,
+}));
+
+JsonifyForLog.impl(http.ServerResponse, (res) => ({
+  statusCode: res.statusCode,
+  header: res._header,
+}));
+
+JsonifyForLog.impl(undefined, () => (undefined));
 
 function createCoralogixLogger(config, params) {
   const {
@@ -44,6 +59,7 @@ function createCoralogixLogger(config, params) {
         ow: {
           activationId: process.env.__OW_ACTIVATION_ID,
           actionName: process.env.__OW_ACTION_NAME,
+          transactionId: process.env.__OW_TRANSACTION_ID,
         },
       }),
     });

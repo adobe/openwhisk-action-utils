@@ -45,7 +45,7 @@ function config() {
 }
 
 const openhwiskConsoleLogger = new ConsoleLogger({
-  level: 'info',
+  level: config().LOG_LEVEL,
   stream: process.stdout,
   formatter: (msg, opts) => {
     // remove last message argument if object. this suppresses the bunyan fields being
@@ -54,7 +54,8 @@ const openhwiskConsoleLogger = new ConsoleLogger({
     if (msg.length > 0) {
       const lst = msg[msg.length - 1];
       if (typeof lst === 'object' && !(lst instanceof Error)) {
-        msg.splice(-1, 1);
+        // eslint-disable-next-line no-param-reassign
+        msg = msg.slice(0, msg.length - 1);
       }
     }
     return messageFormatSimple(msg, opts);
@@ -140,7 +141,7 @@ function createBunyanLogger(params, logger = rootLogger) {
     serializers,
     streams: [{
       name: 'Bunyan2HelixLog',
-      level: config.LOG_LEVEL,
+      level: 'trace',
       type: 'raw',
       stream: new Bunyan2HelixLog(logger),
     }],
@@ -150,6 +151,7 @@ function createBunyanLogger(params, logger = rootLogger) {
   bunyanLogger.fields.ow = {
     activationId: process.env.__OW_ACTIVATION_ID,
     actionName: process.env.__OW_ACTION_NAME,
+    transactionId: process.env.__OW_TRANSACTION_ID || '',
   };
 
   if (addStream(bunyanLogger, createLogglyStream, cfg, params)) {
@@ -161,7 +163,57 @@ function createBunyanLogger(params, logger = rootLogger) {
   return bunyanLogger;
 }
 
+/**
+ * Wraps a main openwhisk function and intitializes logging.
+ * it also creates a bunyan logger and binds it to the `__ow_logger` params.
+ *
+ * @param {Function} fn - original openwhisk action main function
+ * @param {*} params - openwhisk action params
+ * @returns {*} the return value of the action
+ */
+async function wrap(fn, params = {}) {
+  try {
+    setupHelixLogger(params);
+    const disclosedParams = { ...params };
+    Object.keys(disclosedParams)
+      .forEach((key) => {
+        if (key.match(/^[A-Z0-9_]+$/)) {
+          delete disclosedParams[key];
+        }
+      });
+    if (!params.__ow_logger) {
+      // eslint-disable-next-line no-param-reassign
+      params.__ow_logger = createBunyanLogger(params);
+    }
+    const logger = params.__ow_logger;
+    try {
+      logger.trace({
+        params: disclosedParams,
+      }, 'before');
+      const result = await fn(params);
+      logger.trace({
+        result,
+      }, 'result');
+      return result;
+    } catch (e) {
+      logger.error({
+        params: disclosedParams,
+        error: e,
+      }, 'error');
+      return {
+        statusCode: e.statusCode || 500,
+      };
+    }
+  } catch (e) {
+    console.error(e);
+    return {
+      statusCode: e.statusCode || 500,
+    };
+  }
+}
+
 module.exports = {
+  wrap,
   setupHelixLogger,
   createBunyanLogger,
 };

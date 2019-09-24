@@ -74,7 +74,7 @@ function logRequest(logger) {
     req.log.fields.name = 'http';
 
     // Request started
-    req.log.trace({ req }, `${req.method} ${req.url}`);
+    req.log.info({ req }, `${req.method} ${req.url}`);
 
     // Start the request timer
     const time = process.hrtime();
@@ -87,8 +87,7 @@ function logRequest(logger) {
       const message = `${req.method} ${req.url} ${res.statusCode} - ${res.duration} ms`;
 
       if (req.log) {
-        req.log.info(message);
-        req.log.trace({ res });
+        req.log.info({ res }, message);
       }
     });
     next();
