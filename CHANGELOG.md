@@ -1,3 +1,19 @@
+# [2.0.0](https://github.com/adobe/openwhisk-action-utils/compare/v1.1.0...v2.0.0) (2019-09-25)
+
+
+### Features
+
+* **logger:** add support for coralogix and helix-log ([2e53653](https://github.com/adobe/openwhisk-action-utils/commit/2e53653)), closes [#6](https://github.com/adobe/openwhisk-action-utils/issues/6) [#7](https://github.com/adobe/openwhisk-action-utils/issues/7)
+* **logger:** create wrap function that creates a __ow_logger ([9cf11b0](https://github.com/adobe/openwhisk-action-utils/commit/9cf11b0))
+
+
+### BREAKING CHANGES
+
+* **logger:** The exported `logger` is no longer a function but exports an object.
+
+The exported object contains 2 function that explicitely deal with setting up helix-log
+and/or bunyan logging to be used with openwhisk.
+
 # [1.1.0](https://github.com/adobe/openwhisk-action-utils/compare/v1.0.0...v1.1.0) (2019-09-03)
 
 
