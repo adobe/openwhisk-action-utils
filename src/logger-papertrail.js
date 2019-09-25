@@ -12,84 +12,9 @@
 
 /* eslint-disable no-underscore-dangle */
 
-const { Writable } = require('stream');
-const BunyanSyslog = require('@tripod/bunyan-syslog');
+const { SyslogStream } = require('./syslog-stream.js');
 
 let papertrailStream = null;
-
-const LEVELS = {
-  10: 'TRACE',
-  20: 'DEBUG',
-  30: 'INFO ',
-  40: 'WARN ',
-  50: 'ERROR',
-  60: 'FATAL',
-};
-
-const SYSLOG_LEVELS = {
-  10: 7,
-  20: 7,
-  30: 6,
-  40: 4,
-  50: 3,
-  60: 0,
-};
-
-function safeCycles() {
-  const seen = [];
-  function bunyanCycles(_, v) {
-    if (!v || typeof (v) !== 'object') {
-      return (v);
-    }
-    if (seen.indexOf(v) !== -1) {
-      return ('[Circular]');
-    }
-    seen.push(v);
-    return (v);
-  }
-
-  return bunyanCycles;
-}
-
-class SimpleFormat extends Writable {
-  constructor(options = {}, base = process.stdout) {
-    super();
-    this.out = base;
-    this.wskLog = options.wskLog;
-  }
-
-  write(rec) {
-    const {
-      hostname,
-      level,
-      time,
-      req,
-      res,
-      ow: {
-        activationId: id = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        actionName: name = 'unknown',
-      },
-    } = rec;
-    let {
-      msg,
-    } = rec;
-    if (this.wskLog) {
-      const line = `${LEVELS[level]} - ${msg}\n`;
-      this.out.write(line);
-    } else {
-      // use _send directly, so we can avoid the json serialization of 'rec'
-      const date = new Date(time).toJSON();
-      if (req || res) {
-        msg = JSON.stringify({
-          req,
-          res,
-        }, safeCycles(), 2);
-      }
-      const line = `<${8 + SYSLOG_LEVELS[level]}>${date} ${hostname} ${name}[0]:${id.substring(0, 16)} ${LEVELS[level]} ${msg}`;
-      this.out._send(line);
-    }
-  }
-}
 
 function createPaperTrailStream(config, params) {
   if (!(params && params.PAPERTRAIL_HOST && params.PAPERTRAIL_PORT)) {
@@ -97,17 +22,17 @@ function createPaperTrailStream(config, params) {
   }
 
   if (!papertrailStream) {
-    const syslogStream = BunyanSyslog.createBunyanStream({
-      type: 'tcp',
+    const syslogStream = new SyslogStream({
       host: params.PAPERTRAIL_HOST,
       port: Number.parseInt(params.PAPERTRAIL_PORT, 10),
+      tls: true,
     });
 
     papertrailStream = {
       name: 'PapertrailStream',
       type: 'raw',
       level: config.LOG_LEVEL,
-      stream: new SimpleFormat({}, syslogStream),
+      stream: syslogStream,
     };
   }
 
