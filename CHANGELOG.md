@@ -1,3 +1,10 @@
+# [2.3.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.2.0...v2.3.0) (2019-09-26)
+
+
+### Features
+
+* **logger:** convert papertrail stream to helix logger ([#14](https://github.com/adobe/openwhisk-action-utils/issues/14)) ([8fdc230](https://github.com/adobe/openwhisk-action-utils/commit/8fdc230)), closes [#13](https://github.com/adobe/openwhisk-action-utils/issues/13)
+
 # [2.2.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.1.0...v2.2.0) (2019-09-26)
 
 
