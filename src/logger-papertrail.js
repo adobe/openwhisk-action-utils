@@ -12,31 +12,68 @@
 
 /* eslint-disable no-underscore-dangle */
 
+const { messageFormatJson, numericLogLevel } = require('@adobe/helix-log');
 const { SyslogStream } = require('./syslog-stream.js');
 
-let papertrailStream = null;
+let papertrailLogger = null;
 
-function createPaperTrailStream(config, params) {
-  if (!(params && params.PAPERTRAIL_HOST && params.PAPERTRAIL_PORT)) {
+class PapertraiLogger {
+  constructor(opts = {}) {
+    const {
+      level = 'silly',
+      formatter = messageFormatJson,
+      host,
+      port,
+      tls,
+      ...fmtOpts
+    } = opts;
+    Object.assign(this, {
+      level, formatter, fmtOpts,
+    });
+    this.stream = new SyslogStream({
+      host,
+      port,
+      tls,
+    });
+  }
+
+  log(msg, opts = {}) {
+    const { level = 'info' } = opts || {};
+    if (numericLogLevel(level) > numericLogLevel(this.level)) {
+      return;
+    }
+    const rec = this.formatter(msg, { ...opts, ...this.fmtOpts, level });
+    this.stream.write(rec);
+  }
+}
+
+function createPapertrailLogger(config, params) {
+  const {
+    PAPERTRAIL_HOST,
+    PAPERTRAIL_PORT,
+    PAPERTRAIL_TLS = 'true',
+    PAPERTRAIL_LOG_LEVEL = config.level,
+  } = params;
+  if (!PAPERTRAIL_HOST || !PAPERTRAIL_PORT) {
     return null;
   }
 
-  if (!papertrailStream) {
-    const syslogStream = new SyslogStream({
-      host: params.PAPERTRAIL_HOST,
-      port: Number.parseInt(params.PAPERTRAIL_PORT, 10),
-      tls: true,
+  if (!papertrailLogger) {
+    papertrailLogger = new PapertraiLogger({
+      host: PAPERTRAIL_HOST,
+      port: Number.parseInt(PAPERTRAIL_PORT, 10),
+      tls: PAPERTRAIL_TLS !== 'false',
+      level: PAPERTRAIL_LOG_LEVEL,
+      formatter: (msg, opts) => Object.assign(messageFormatJson(msg, opts), {
+        ow: {
+          activationId: process.env.__OW_ACTIVATION_ID,
+          actionName: process.env.__OW_ACTION_NAME,
+          transactionId: process.env.__OW_TRANSACTION_ID,
+        },
+      }),
     });
-
-    papertrailStream = {
-      name: 'PapertrailStream',
-      type: 'raw',
-      level: config.LOG_LEVEL,
-      stream: syslogStream,
-    };
   }
-
-  return papertrailStream;
+  return papertrailLogger;
 }
 
-module.exports = createPaperTrailStream;
+module.exports = createPapertrailLogger;

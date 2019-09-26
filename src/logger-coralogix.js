@@ -13,23 +13,10 @@
 /* eslint-disable no-underscore-dangle */
 
 const {
-  CoralogixLogger, messageFormatJson, JsonifyForLog,
+  CoralogixLogger, messageFormatJson,
 } = require('@adobe/helix-log');
 
-const http = require('http');
-
 let coralogixLogger = null;
-
-JsonifyForLog.impl(http.IncomingMessage, (req) => ({
-  method: req.method,
-  url: req.url,
-  headers: req.headers,
-}));
-
-JsonifyForLog.impl(http.ServerResponse, (res) => ({
-  statusCode: res.statusCode,
-  header: res._header,
-}));
 
 function createCoralogixLogger(config, params) {
   const {
@@ -50,7 +37,7 @@ function createCoralogixLogger(config, params) {
     // we use the openwhisk package name as subsystem
     const [, , owPackage] = actionName.split('/');
     const applicationName = CORALOGIX_APPLICATION_NAME || namespace;
-    const subsystemName = CORALOGIX_SUBSYSTEM_NAME || owPackage;
+    const subsystemName = CORALOGIX_SUBSYSTEM_NAME || owPackage || 'n/a';
     coralogixLogger = new CoralogixLogger(CORALOGIX_API_KEY, applicationName, subsystemName, {
       level: CORALOGIX_LOG_LEVEL || config.LOG_LEVEL,
       formatter: (msg, opts) => Object.assign(messageFormatJson(msg, opts), {
