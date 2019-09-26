@@ -19,7 +19,6 @@ const dotenv = require('dotenv');
 const {
   Bunyan2HelixLog, rootLogger, ConsoleLogger, messageFormatSimple,
 } = require('@adobe/helix-log');
-const createLogglyStream = require('./logger-loggly');
 const createPaperTrailStream = require('./logger-papertrail');
 const createCoralogixLogger = require('./logger-coralogix');
 
@@ -125,7 +124,7 @@ function setupHelixLogger(params, logger = rootLogger) {
 /**
  * Creates a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
  * stream to the given helix logger.
- * It will also setup external log streams (loggly or papertrail) if the respective credentials
+ * It will also setup external log streams (papertrail) if the respective credentials
  * are available.
  *
  * Please note that those external streams are not support by helix-log and therefore only
@@ -154,9 +153,6 @@ function createBunyanLogger(params, logger = rootLogger) {
     transactionId: process.env.__OW_TRANSACTION_ID || '',
   };
 
-  if (addStream(bunyanLogger, createLogglyStream, cfg, params)) {
-    console.log('configured loggly logger.');
-  }
   if (addStream(bunyanLogger, createPaperTrailStream, cfg, params)) {
     console.log('configured papertrail logger.');
   }
