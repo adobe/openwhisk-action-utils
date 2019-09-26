@@ -1,3 +1,10 @@
+# [2.2.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.1.0...v2.2.0) (2019-09-26)
+
+
+### Features
+
+* **log:** remove loggly logger ([#12](https://github.com/adobe/openwhisk-action-utils/issues/12)) ([03ec0a7](https://github.com/adobe/openwhisk-action-utils/commit/03ec0a7)), closes [#11](https://github.com/adobe/openwhisk-action-utils/issues/11)
+
 # [2.1.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.0.0...v2.1.0) (2019-09-26)
 
 
