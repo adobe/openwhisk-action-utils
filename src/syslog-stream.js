@@ -19,12 +19,14 @@ const tls = require('tls');
 const HOSTNAME = os.hostname();
 
 const SYSLOG_LEVELS = {
-  10: 7,
-  20: 7,
-  30: 6,
-  40: 4,
-  50: 3,
-  60: 0,
+  silly: 7,
+  trace: 7,
+  verbose: 7,
+  debug: 7,
+  info: 6,
+  warn: 4,
+  error: 3,
+  fatal: 0,
 };
 
 const SYSLOG_FACILITY = {
@@ -48,15 +50,6 @@ const SYSLOG_FACILITY = {
   local5: 21,
   local6: 22,
   local7: 23,
-};
-
-const BUNYAN_LEVELS = {
-  10: 'TRACE',
-  20: 'DEBUG',
-  30: 'INFO ',
-  40: 'WARN ',
-  50: 'ERROR',
-  60: 'FATAL',
 };
 
 function safeCycles() {
@@ -140,26 +133,29 @@ class SyslogStream extends Stream {
   write(rec) {
     const {
       hostname = HOSTNAME,
-      level = 30, // default is 30
-      v,
-      pid,
-      name,
-      time,
-      msg,
+      level = 'info',
+      timestamp,
+      message,
       ow: {
         activationId: actId = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
         actionName: actionName = 'unknown',
       },
+      // ignored fields
+      pid = 1,
+      name,
+      bunyanLevel,
+      v,
+      // additinal data
       ...data
     } = rec;
-    const date = new Date(time).toJSON();
+    const date = new Date(timestamp).toJSON();
     const l = (this.facility * 8) + SYSLOG_LEVELS[level];
-    const m = [msg];
+    const m = [message];
     if (Object.keys(data).length > 0) {
       m.push(`data:${JSON.stringify(data, safeCycles())}`);
     }
-    m.forEach((message) => {
-      this.queue.push(`<${l}>${date} ${hostname} ${actionName}[${pid}]:${actId.substring(0, 16)} ${BUNYAN_LEVELS[level]} ${message}\n`);
+    m.forEach((msg) => {
+      this.queue.push(`<${l}>${date} ${hostname} ${actionName}[${pid}]:${actId.substring(0, 16)} ${level.toUpperCase()} ${msg}\n`);
     });
     this.flush();
   }
@@ -183,7 +179,7 @@ class SyslogStream extends Stream {
     if (this.port) {
       str += `, port=${this.port}`;
     }
-    str += ', proto=tcp>]';
+    str += '>]';
     return (str);
   }
 }

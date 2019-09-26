@@ -10,16 +10,17 @@
  * governing permissions and limitations under the License.
  */
 
-/* eslint-disable no-underscore-dangle,no-console */
+/* eslint-disable no-underscore-dangle,no-console,no-else-return */
 
 const path = require('path');
 const fs = require('fs');
+const http = require('http');
 const bunyan = require('bunyan');
 const dotenv = require('dotenv');
 const {
-  Bunyan2HelixLog, rootLogger, ConsoleLogger, messageFormatSimple,
+  rootLogger, rootFacade, JsonifyForLog,
 } = require('@adobe/helix-log');
-const createPaperTrailStream = require('./logger-papertrail');
+const createPapertrailLogger = require('./logger-papertrail');
 const createCoralogixLogger = require('./logger-coralogix');
 
 let _config = null;
@@ -43,24 +44,60 @@ function config() {
   return _config;
 }
 
-const openhwiskConsoleLogger = new ConsoleLogger({
-  level: config().LOG_LEVEL,
-  stream: process.stdout,
-  formatter: (msg, opts) => {
-    // remove last message argument if object. this suppresses the bunyan fields being
-    // logged to the activation logs. once helix-log supports proper data logging,
-    // this can be simplified.
-    if (msg.length > 0) {
-      const lst = msg[msg.length - 1];
-      if (typeof lst === 'object' && !(lst instanceof Error)) {
-        // eslint-disable-next-line no-param-reassign
-        msg = msg.slice(0, msg.length - 1);
-      }
-    }
-    return messageFormatSimple(msg, opts);
-  },
+// define special 'serializers' for express request
+JsonifyForLog.impl(http.IncomingMessage, (req) => ({
+  method: req.method,
+  url: req.url,
+  headers: req.headers,
+}));
+
+// define special 'serializers' for express response
+JsonifyForLog.impl(http.ServerResponse, (res) => {
+  if (!res || !res.statusCode) {
+    return res;
+  }
+  return {
+    statusCode: res.statusCode,
+    duration: res.duration,
+    headers: res.getHeaders(),
+  };
 });
 
+class Bunyan2HelixLog {
+  constructor(logger) {
+    this.logger = logger;
+  }
+
+  static _bunyan2hlxLevel(lvl) {
+    if (lvl < 10) {
+      return 'silly';
+    } else if (lvl < 20) {
+      return 'trace';
+    } else if (lvl < 30) {
+      return 'debug';
+    } else if (lvl < 40) {
+      return 'info';
+    } else if (lvl < 50) {
+      return 'warn';
+    } else if (lvl < 60) {
+      return 'error';
+    } else {
+      return 'fatal';
+    }
+  }
+
+  write(payload) {
+    const {
+      msg, time, level, ...fields
+    } = payload;
+    fields.timestamp = new Date(time);
+    const hlxOpts = { level: Bunyan2HelixLog._bunyan2hlxLevel(level) };
+    this.logger.child(fields).logWithOpts([msg], hlxOpts);
+  }
+}
+
+
+// TODO: remove once https://github.com/adobe/helix-log/pull/48 is released
 const serializers = {
   res: (res) => {
     if (!res || !res.statusCode) {
@@ -88,18 +125,6 @@ function addLogger(parent, name, createFN, cfg, params) {
   return true;
 }
 
-function addStream(logger, createFN, cfg, params) {
-  const stream = createFN(cfg, params);
-  if (!stream) {
-    return false;
-  }
-  if (logger.streams.find((s) => s.name === stream.name)) {
-    return true;
-  }
-  logger.addStream(stream);
-  return true;
-}
-
 /**
  * Initializes a helix-log logger for use with an openwhisk action.
  * It ensures that, the given logger has a default console logger configured. It also looks for
@@ -110,14 +135,14 @@ function addStream(logger, createFN, cfg, params) {
  *                                            `rootLogger`.
  */
 function setupHelixLogger(params, logger = rootLogger) {
-  // replace default logger with our own console logger
-  logger.loggers.set('default', openhwiskConsoleLogger);
-
   if (addLogger(logger, 'CoralogixLogger', createCoralogixLogger, config(), params)) {
     // eslint-disable-next-line no-console
     console.log('configured coralogix logger.');
   }
-
+  if (addLogger(logger, 'PapertraiLogger', createPapertrailLogger, config(), params)) {
+    // eslint-disable-next-line no-console
+    console.log('configured papertrail logger.');
+  }
   return logger;
 }
 
@@ -131,11 +156,11 @@ function setupHelixLogger(params, logger = rootLogger) {
  * work with this bunyan logger.
  *
  * @param {*} params                   - the openwhisk action params
- * @param {Logger} [logger=rootLogger] - a helix multi logger. defaults to the helix `rootLogger`.
+ * @param {LogFacade} [logger=rootFacade] - a helix log facade. defaults to the `rootFacade`.
  */
-function createBunyanLogger(params, logger = rootLogger) {
+function createBunyanLogger(params, logger = rootFacade) {
   const cfg = config();
-  const bunyanLogger = bunyan.createLogger({
+  return bunyan.createLogger({
     name: cfg.pkgName,
     serializers,
     streams: [{
@@ -145,18 +170,6 @@ function createBunyanLogger(params, logger = rootLogger) {
       stream: new Bunyan2HelixLog(logger),
     }],
   });
-
-  // eslint-disable-next-line no-param-reassign
-  bunyanLogger.fields.ow = {
-    activationId: process.env.__OW_ACTIVATION_ID,
-    actionName: process.env.__OW_ACTION_NAME,
-    transactionId: process.env.__OW_TRANSACTION_ID || '',
-  };
-
-  if (addStream(bunyanLogger, createPaperTrailStream, cfg, params)) {
-    console.log('configured papertrail logger.');
-  }
-  return bunyanLogger;
 }
 
 /**
