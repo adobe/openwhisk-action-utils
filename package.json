@@ -18,7 +18,6 @@
   "dependencies": {
     "@adobe/helix-log": "^2.2.0",
     "bunyan": "^1.8.12",
-    "bunyan-loggly": "^1.4.1",
     "dotenv": "^8.0.0",
     "openwhisk": "^3.20.0",
     "serverless-http": "^2.3.0"
