@@ -1,3 +1,10 @@
+# [2.1.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.0.0...v2.1.0) (2019-09-26)
+
+
+### Features
+
+* **papertrail:** add TLS support ([#10](https://github.com/adobe/openwhisk-action-utils/issues/10)) ([b18a774](https://github.com/adobe/openwhisk-action-utils/commit/b18a774)), closes [#9](https://github.com/adobe/openwhisk-action-utils/issues/9)
+
 # [2.0.0](https://github.com/adobe/openwhisk-action-utils/compare/v1.1.0...v2.0.0) (2019-09-25)
 
 
