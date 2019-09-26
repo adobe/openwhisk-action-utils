@@ -31,8 +31,6 @@ JsonifyForLog.impl(http.ServerResponse, (res) => ({
   header: res._header,
 }));
 
-JsonifyForLog.impl(undefined, () => (undefined));
-
 function createCoralogixLogger(config, params) {
   const {
     CORALOGIX_API_KEY,
