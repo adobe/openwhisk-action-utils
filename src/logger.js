@@ -118,8 +118,11 @@ function addLogger(parent, name, createFN, cfg, params) {
  *                                            `rootLogger`.
  */
 function setupHelixLogger(params, logger = rootLogger) {
-  // replace default logger with our own console logger
-  logger.loggers.set('default', openhwiskConsoleLogger);
+  // only overwrite the default console logger if there is one
+  if (logger.loggers.has('default')) {
+    // replace default logger with our own console logger
+    logger.loggers.set('default', openhwiskConsoleLogger);
+  }
 
   if (addLogger(logger, 'CoralogixLogger', createCoralogixLogger, config(), params)) {
     // eslint-disable-next-line no-console
@@ -133,29 +136,36 @@ function setupHelixLogger(params, logger = rootLogger) {
 }
 
 /**
- * Creates a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
- * stream to the given helix logger.
- * It will also setup external log streams (papertrail) if the respective credentials
- * are available.
- *
- * Please note that those external streams are not support by helix-log and therefore only
- * work with this bunyan logger.
+ * Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+ * stream to the given helix logger. It will add a new bunyan-logger to `params.__ow_logger`
+ * if not already present.
  *
  * @param {*} params                   - the openwhisk action params
  * @param {Logger} [logger=rootLogger] - a helix multi logger. defaults to the helix `rootLogger`.
+ * @return {BunyanLogger} A bunyan logger
  */
-function createBunyanLogger(params, logger = rootLogger) {
+function setupBunyanLogger(params, logger = rootLogger) {
   const cfg = config();
-  return bunyan.createLogger({
-    name: cfg.pkgName,
-    serializers,
-    streams: [{
+  if (!params.__ow_logger) {
+    // eslint-disable-next-line no-param-reassign
+    params.__ow_logger = bunyan.createLogger({
+      name: cfg.pkgName,
+      serializers,
+      streams: [],
+    });
+  }
+  const { __ow_logger: log } = params;
+
+  // check if not already added
+  if (!log.streams.find((s) => s.name === 'Bunyan2HelixLog')) {
+    log.addStream({
       name: 'Bunyan2HelixLog',
       level: 'trace',
       type: 'raw',
       stream: new Bunyan2HelixLog(logger),
-    }],
-  });
+    });
+  }
+  return log;
 }
 
 /**
@@ -168,10 +178,7 @@ function createBunyanLogger(params, logger = rootLogger) {
  */
 function init(params, logger = rootLogger) {
   setupHelixLogger(params, logger);
-  if (!params.__ow_logger) {
-    // eslint-disable-next-line no-param-reassign
-    params.__ow_logger = createBunyanLogger(params);
-  }
+  setupBunyanLogger(params, logger);
   return params.__ow_logger;
 }
 
@@ -181,9 +188,11 @@ function init(params, logger = rootLogger) {
  *
  * @param {Function} fn - original openwhisk action main function
  * @param {*} params - openwhisk action params
+ * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
+ *                                            `rootLogger`.
  * @returns {*} the return value of the action
  */
-async function wrap(fn, params = {}) {
+async function wrap(fn, params = {}, logger = rootLogger) {
   try {
     const disclosedParams = { ...params };
     Object.keys(disclosedParams)
@@ -192,18 +201,18 @@ async function wrap(fn, params = {}) {
           delete disclosedParams[key];
         }
       });
-    const logger = init(params);
+    const log = init(params, logger);
     try {
-      logger.trace({
+      log.trace({
         params: disclosedParams,
       }, 'before');
       const result = await fn(params);
-      logger.trace({
+      log.trace({
         result,
       }, 'result');
       return result;
     } catch (e) {
-      logger.error({
+      log.error({
         params: disclosedParams,
         error: e,
       }, 'error');
@@ -223,5 +232,5 @@ module.exports = {
   wrap,
   init,
   setupHelixLogger,
-  createBunyanLogger,
+  setupBunyanLogger,
 };
