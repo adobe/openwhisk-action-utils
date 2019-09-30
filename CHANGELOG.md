@@ -1,3 +1,10 @@
+## [2.3.4](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.3...v2.3.4) (2019-09-30)
+
+
+### Bug Fixes
+
+* **log:** papertrail log level is not initialized correctly ([#19](https://github.com/adobe/openwhisk-action-utils/issues/19)) ([1647f2d](https://github.com/adobe/openwhisk-action-utils/commit/1647f2d))
+
 ## [2.3.3](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.2...v2.3.3) (2019-09-30)
 
 
