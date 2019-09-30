@@ -52,7 +52,7 @@ function createPapertrailLogger(config, params) {
     PAPERTRAIL_HOST,
     PAPERTRAIL_PORT,
     PAPERTRAIL_TLS = 'true',
-    PAPERTRAIL_LOG_LEVEL = config.level,
+    PAPERTRAIL_LOG_LEVEL = config.LOG_LEVEL,
   } = params;
   if (!PAPERTRAIL_HOST || !PAPERTRAIL_PORT) {
     return null;
