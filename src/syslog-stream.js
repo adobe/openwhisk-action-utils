@@ -138,7 +138,7 @@ class SyslogStream extends Stream {
       message,
       ow: {
         activationId: actId = 'xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx',
-        actionName: actionName = 'unknown',
+        actionName = 'unknown',
       },
       // ignored fields
       pid = 1,
