@@ -1,3 +1,10 @@
+## [2.3.3](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.2...v2.3.3) (2019-09-30)
+
+
+### Bug Fixes
+
+* **logger:** external bunyan logger is not forwarded to helix-log ([9ee97fd](https://github.com/adobe/openwhisk-action-utils/commit/9ee97fd))
+
 ## [2.3.2](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.1...v2.3.2) (2019-09-28)
 
 
