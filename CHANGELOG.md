@@ -1,3 +1,10 @@
+## [2.3.5](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.4...v2.3.5) (2019-10-17)
+
+
+### Bug Fixes
+
+* **log:** upgrade to helix-log 3.0.0 ([c553378](https://github.com/adobe/openwhisk-action-utils/commit/c553378))
+
 ## [2.3.4](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.3...v2.3.4) (2019-09-30)
 
 
