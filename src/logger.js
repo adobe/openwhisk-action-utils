@@ -18,7 +18,8 @@ const http = require('http');
 const bunyan = require('bunyan');
 const dotenv = require('dotenv');
 const {
-  Bunyan2HelixLog, rootLogger, ConsoleLogger, messageFormatSimple, JsonifyForLog,
+  BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger, ConsoleLogger, messageFormatSimple,
+  JsonifyForLog,
 } = require('@adobe/helix-log');
 const createPapertrailLogger = require('./logger-papertrail');
 const createCoralogixLogger = require('./logger-coralogix');
@@ -157,12 +158,15 @@ function setupBunyanLogger(params, logger = rootLogger) {
   const { __ow_logger: log } = params;
 
   // check if not already added
-  if (!log.streams.find((s) => s.name === 'Bunyan2HelixLog')) {
+  if (!log.streams.find((s) => s.name === 'BunyanStreamInterface')) {
     log.addStream({
-      name: 'Bunyan2HelixLog',
+      name: 'BunyanStreamInterface',
       level: 'trace',
       type: 'raw',
-      stream: new Bunyan2HelixLog(logger),
+      stream: new BunyanStreamInterface({
+        logger,
+        filter: eraseBunyanDefaultFields,
+      }),
     });
   }
   return log;
