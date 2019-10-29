@@ -13,34 +13,33 @@
     "lint": "./node_modules/.bin/eslint .",
     "test": "nyc --reporter=text --reporter=lcov mocha --lines 100 --funcs 100 --branch 95",
     "test-ci": "npm run lint && npm run test && codecov",
-    "semantic-release": "semantic-release"
+    "semantic-release": "semantic-release --debug"
   },
   "dependencies": {
     "@adobe/helix-log": "3.0.0",
     "bunyan": "^1.8.12",
-    "dotenv": "^8.0.0",
+    "dotenv": "^8.2.0",
     "openwhisk": "^3.20.0",
     "serverless-http": "^2.3.0"
   },
   "devDependencies": {
-    "@semantic-release/changelog": "^3.0.4",
-    "@semantic-release/git": "^7.0.16",
-    "@semantic-release/github": "^5.4.3",
-    "@semantic-release/npm": "^5.1.15",
+    "@semantic-release/changelog": "^3.0.5",
+    "@semantic-release/git": "^7.0.17",
+    "@semantic-release/github": "^5.5.5",
     "body-parser": "^1.19.0",
     "codecov": "^3.6.1",
-    "eslint": "^6.5.0",
+    "eslint": "^6.6.0",
     "eslint-config-airbnb-base": "^14.0.0",
     "eslint-plugin-header": "^3.0.0",
     "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1",
     "ghooks": "^2.0.4",
-    "lint-staged": "^9.4.0",
+    "lint-staged": "^9.4.2",
     "lodash": "^4.17.15",
-    "mocha": "^6.2.0",
+    "mocha": "^6.2.2",
     "mocha-junit-reporter": "^1.23.1",
     "nyc": "^14.1.1",
-    "semantic-release": "^15.13.24"
+    "semantic-release": "^15.13.28"
   },
   "engines": {
     "node": ">= 8.3.0"
