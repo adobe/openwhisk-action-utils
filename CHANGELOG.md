@@ -1,3 +1,10 @@
+## [2.3.6](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.5...v2.3.6) (2019-10-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependencies ([5a9b8cb](https://github.com/adobe/openwhisk-action-utils/commit/5a9b8cbbf0c198c6e50807133a260c6d5286313f))
+
 ## [2.3.5](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.4...v2.3.5) (2019-10-17)
 
 
