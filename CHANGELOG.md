@@ -1,3 +1,10 @@
+## [2.3.7](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.6...v2.3.7) (2019-10-29)
+
+
+### Bug Fixes
+
+* **ci:** trigger release ([f253966](https://github.com/adobe/openwhisk-action-utils/commit/f2539666d4cd0167037477f15bda9b17fa705ba7))
+
 ## [2.3.6](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.5...v2.3.6) (2019-10-29)
 
 
