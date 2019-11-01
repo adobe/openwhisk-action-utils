@@ -46,7 +46,7 @@ function createCoralogixLogger(config, params) {
           actionName: process.env.__OW_ACTION_NAME,
           transactionId: process.env.__OW_TRANSACTION_ID,
         },
-        referrer: params.__ow_header ? params.__ow_header['x-referrer'] : 'n/a',
+        referrer: params.__ow_header ? decodeURIComponent(params.__ow_header['x-referrer']) : 'n/a',
       }),
     });
   }
