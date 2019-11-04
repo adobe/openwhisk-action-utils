@@ -15,34 +15,24 @@
 const {
   CoralogixLogger, messageFormatJson,
 } = require('@adobe/helix-log');
-const { deepclone } = require('ferrum');
 
 let coralogixLogger = null;
 
 // todo: sanitizing the secrets should be better handled in the logging framework.
-const sanatizeParams = (params) => {
-  // backup and restore __ow_logger because deepclone cannot clone it
-  // eslint-disable-next-line camelcase
-  const { __ow_logger } = params;
-  // eslint-disable-next-line no-underscore-dangle, no-param-reassign
-  delete params.__ow_logger;
+const sanitize = (params) => {
+  const sanitizedParams = { ...params };
+  Object.keys(sanitize)
+    .forEach((key) => {
+      if (key.match(/^[A-Z0-9_]+$/)) {
+        sanitizedParams[key] = '[undisclosed secret]';
+      }
+    });
 
-  const filtered = deepclone(params);
-
-  Object.keys(filtered).forEach((key) => {
-    if (key.match(/^[A-Z0-9_]+$/)) {
-      filtered[key] = '[undisclosed secret]';
-    }
-  });
-
-  if (filtered.__ow_headers && filtered.__ow_headers.authorization) {
-    filtered.__ow_headers.authorization = '[undisclosed secret]';
+  if (sanitizedParams.__ow_headers && sanitizedParams.__ow_headers.authorization) {
+    sanitizedParams.__ow_headers.authorization = '[undisclosed secret]';
   }
 
-  // eslint-disable-next-line no-underscore-dangle, no-param-reassign, camelcase
-  params.__ow_logger = __ow_logger;
-
-  return filtered;
+  return sanitizedParams;
 };
 
 function createCoralogixLogger(config, params) {
@@ -65,7 +55,7 @@ function createCoralogixLogger(config, params) {
     const [, , owPackage] = actionName.split('/');
     const applicationName = CORALOGIX_APPLICATION_NAME || namespace;
     const subsystemName = CORALOGIX_SUBSYSTEM_NAME || owPackage || 'n/a';
-    const sanitizedParams = sanatizeParams(params);
+    const sanitizedParams = sanitize(params);
     coralogixLogger = new CoralogixLogger(CORALOGIX_API_KEY, applicationName, subsystemName, {
       level: CORALOGIX_LOG_LEVEL || config.LOG_LEVEL,
       formatter: (msg, opts) => Object.assign(messageFormatJson(msg, opts), {
