@@ -46,7 +46,7 @@ function createCoralogixLogger(config, params) {
           actionName: process.env.__OW_ACTION_NAME,
           transactionId: process.env.__OW_TRANSACTION_ID,
           headers: params.__ow_headers || {},
-          params: params
+          params,
         },
       }),
     });
