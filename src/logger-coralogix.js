@@ -15,8 +15,35 @@
 const {
   CoralogixLogger, messageFormatJson,
 } = require('@adobe/helix-log');
+const { deepclone } = require('ferrum');
 
 let coralogixLogger = null;
+
+// todo: sanitizing the secrets should be better handled in the logging framework.
+const sanatizeParams = (params) => {
+  // backup and restore __ow_logger because deepclone cannot clone it
+  // eslint-disable-next-line camelcase
+  const { __ow_logger } = params;
+  // eslint-disable-next-line no-underscore-dangle, no-param-reassign
+  delete params.__ow_logger;
+
+  const filtered = deepclone(params);
+
+  Object.keys(filtered).forEach((key) => {
+    if (key.match(/^[A-Z0-9_]+$/)) {
+      filtered[key] = '[undisclosed secret]';
+    }
+  });
+
+  if (filtered.__ow_headers && filtered.__ow_headers.authorization) {
+    filtered.__ow_headers.authorization = '[undisclosed secret]';
+  }
+
+  // eslint-disable-next-line no-underscore-dangle, no-param-reassign, camelcase
+  params.__ow_logger = __ow_logger;
+
+  return filtered;
+};
 
 function createCoralogixLogger(config, params) {
   const {
@@ -38,6 +65,7 @@ function createCoralogixLogger(config, params) {
     const [, , owPackage] = actionName.split('/');
     const applicationName = CORALOGIX_APPLICATION_NAME || namespace;
     const subsystemName = CORALOGIX_SUBSYSTEM_NAME || owPackage || 'n/a';
+    const sanitizedParams = sanatizeParams(params);
     coralogixLogger = new CoralogixLogger(CORALOGIX_API_KEY, applicationName, subsystemName, {
       level: CORALOGIX_LOG_LEVEL || config.LOG_LEVEL,
       formatter: (msg, opts) => Object.assign(messageFormatJson(msg, opts), {
@@ -45,8 +73,7 @@ function createCoralogixLogger(config, params) {
           activationId: process.env.__OW_ACTIVATION_ID,
           actionName: process.env.__OW_ACTION_NAME,
           transactionId: process.env.__OW_TRANSACTION_ID,
-          headers: params.__ow_headers || {},
-          params,
+          headers: sanitizedParams.__ow_headers || {},
         },
       }),
     });
