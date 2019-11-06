@@ -13,24 +13,21 @@ function chain() {
   this.inner = () => { };
   this.wrapped = (...opts) => this.inner(...opts);
 
-  const run = (fn) => {
+  this.run = (fn) => {
     // replace the innermost function
     this.inner = fn;
     // and return the full wrapper
     return this.wrapped;
   };
 
-  const use = (wrapper, opts) => {
+  this.use = (wrapper, opts) => {
     // add another layer of wrapping
     this.wrapped = wrapper(this.wrapped, opts);
     // enable chaining
     return this;
   };
 
-  return {
-    use,
-    run,
-  };
+  return this;
 }
 
 module.exports = { chain };
