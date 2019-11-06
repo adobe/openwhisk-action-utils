@@ -9,6 +9,22 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+/**
+ * The `chain` function can be used to create a chain of wrappers around
+ * a `main` function. Usage:
+ *
+ * ```javascript
+ * async main(params) {
+ *   //…my action code…
+ * }
+ *
+ * module.exports.main = chain()
+ * .use(logger)
+ * .use(status)
+ * .use(epsagon)
+ * .run(main);
+ * ```
+ */
 function chain() {
   this.inner = () => { };
   this.wrapped = (...opts) => this.inner(...opts);
