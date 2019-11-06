@@ -9,6 +9,27 @@
 [![Greenkeeper badge](https://badges.greenkeeper.io/adobe/openwhisk-action-utils.svg)](https://greenkeeper.io/)
 [![LGTM Code Quality Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/adobe/openwhisk-action-utils.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/adobe/openwhisk-action-utils)
 
+## Usage
+
+### Chaining
+
+When you have a large number of wrapper functions around your `main` function, use the `chain`
+helper to create a chain of wrappers.
+
+```javascript
+const { chain } = require('@adobe/openwhisk-action-utils');
+
+async main(params) {
+    ...my action code...
+}
+
+module.exports.main = chain()
+   .use(logger) // see @adobe/openwhisk-action-utils
+   .use(status) // see @adobe/helix-status
+   .use(epsagon) // see https://github.com/epsagon/epsagon-node#getting-started-apache-openwhisk
+   .run(main);
+```
+
 ## Contributing
 
 If you have suggestions for how this OpenWhisk probot wrapper could be improved, or want to report a bug, open an issue! We'd love all and any contributions.
