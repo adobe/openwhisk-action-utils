@@ -31,6 +31,19 @@ describe('Wrapper Tests', () => {
     assert.equal(wrapped('John'), 'hello John Paul');
   });
 
+  it('wrap wraps async', async () => {
+    const original = (name) => Promise.resolve(`hello ${name}`);
+
+    const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
+
+    const wrapped = wrap()
+      .with(wrapper, 'Paul')
+      .run(original);
+
+    const result = await wrapped('John');
+    assert.equal(result, 'hello John Paul');
+  });
+
   it('wrap wraps multiple times', () => {
     const original = (name) => `hello ${name}`;
 
