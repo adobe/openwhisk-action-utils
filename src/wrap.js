@@ -36,9 +36,9 @@ function wrap() {
     return this.wrapped;
   };
 
-  this.with = (wrapper, opts) => {
+  this.with = (wrapper, ...opts) => {
     // add another layer of wrapping
-    this.wrapped = wrapper(this.wrapped, opts);
+    this.wrapped = wrapper(this.wrapped, ...opts);
     // enable chaining
     return this;
   };
