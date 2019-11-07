@@ -11,34 +11,34 @@
  */
 /* eslint-env mocha */
 const assert = require('assert');
-const { chain } = require('../src/chain');
+const { wrap } = require('../src/wrap');
 
-describe('Chaining Tests', () => {
-  it('chain leaves initial function unchanged', () => {
+describe('Wrapper Tests', () => {
+  it('wrap leaves initial function unchanged', () => {
     const fn = () => 'bar';
-    assert.equal(chain().run(fn)(), 'bar');
+    assert.equal(wrap().run(fn)(), 'bar');
   });
 
-  it('chain wraps once', () => {
+  it('wrap wraps once', () => {
     const original = (name) => `hello ${name}`;
 
     const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
-    const wrapped = chain()
-      .use(wrapper, 'Paul')
+    const wrapped = wrap()
+      .with(wrapper, 'Paul')
       .run(original);
 
     assert.equal(wrapped('John'), 'hello John Paul');
   });
 
-  it('chain wraps multiple times', () => {
+  it('wrap wraps multiple times', () => {
     const original = (name) => `hello ${name}`;
 
     const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
-    const wrapped = chain()
-      .use(wrapper, 'Jones')
-      .use(wrapper, 'Paul')
+    const wrapped = wrap()
+      .with(wrapper, 'Jones')
+      .with(wrapper, 'Paul')
       .run(original);
 
     assert.equal(wrapped('John'), 'hello John Paul Jones');

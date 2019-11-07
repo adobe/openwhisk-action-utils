@@ -15,7 +15,7 @@ const {
   errorHandler, cacheControl, logRequest, asyncHandler,
 } = require('./middleware.js');
 const expressify = require('./expressify.js');
-const { chain } = require('./chain');
+const { wrap } = require('./wrap');
 
 module.exports = {
   logger,
@@ -24,5 +24,5 @@ module.exports = {
   cacheControl,
   asyncHandler,
   expressify,
-  chain,
+  wrap,
 };

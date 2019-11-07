@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 /**
- * The `chain` function can be used to create a chain of wrappers around
+ * The `wrap` function can be used to create a chain of wrappers around
  * a `main` function. Usage:
  *
  * ```javascript
@@ -18,14 +18,14 @@
  *   //…my action code…
  * }
  *
- * module.exports.main = chain()
- * .use(logger)
- * .use(status)
- * .use(epsagon)
+ * module.exports.main = wrap()
+ * .with(logger)
+ * .with(status)
+ * .with(epsagon)
  * .run(main);
  * ```
  */
-function chain() {
+function wrap() {
   this.inner = () => { };
   this.wrapped = (...opts) => this.inner(...opts);
 
@@ -36,7 +36,7 @@ function chain() {
     return this.wrapped;
   };
 
-  this.use = (wrapper, opts) => {
+  this.with = (wrapper, opts) => {
     // add another layer of wrapping
     this.wrapped = wrapper(this.wrapped, opts);
     // enable chaining
@@ -46,4 +46,4 @@ function chain() {
   return this;
 }
 
-module.exports = { chain };
+module.exports = { wrap };
