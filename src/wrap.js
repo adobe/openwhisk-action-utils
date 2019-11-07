@@ -9,6 +9,37 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+class WrapUtil {
+  constructor(main = () => { }) {
+    this.inner = main;
+    this.wrapped = (...opts) => this.inner(...opts);
+  }
+
+  /**
+  * @function run
+  * @param {ActionFunction} fn The action function to run.
+  * @returns {ActionFunction} A function that can be invoked as action.
+  */
+  run(fn) {
+    // replace the innermost function
+    this.inner = fn;
+    // and return the full wrapper
+    return this.wrapped;
+  }
+
+  /**
+  * @function with
+  * @param {PluginFunction} wrapper The wrapper to apply to the action
+  * @param {*} ...opts the options passed into the wrapper
+  * @returns {PluginFunction} The chainable wrapper
+  */
+  with(wrapper, ...opts) {
+    // add another layer of wrapping
+    this.wrapped = wrapper(this.wrapped, ...opts);
+    // enable chaining
+    return this;
+  }
+}
 
 /**
  * Plugin function that returns the wrapper function.
@@ -38,35 +69,8 @@
  * @param {*} ...opts The options passed to the action.
  * @returns {ActionFunction} An action function that can be invoked.
  */
-function wrap() {
-  this.inner = () => { };
-  this.wrapped = (...opts) => this.inner(...opts);
-
-  /**
-  * @function run
-  * @param {ActionFunction} fn The action function to run.
-  * @returns {ActionFunction} A function that can be invoked as action.
-  */
-  this.run = (fn) => {
-    // replace the innermost function
-    this.inner = fn;
-    // and return the full wrapper
-    return this.wrapped;
-  };
-  /**
-  * @function with
-  * @param {PluginFunction} wrapper The wrapper to apply to the action
-  * @param {*} ...opts the options passed into the wrapper
-  * @returns {PluginFunction} The chainable wrapper
-  */
-  this.with = (wrapper, ...opts) => {
-    // add another layer of wrapping
-    this.wrapped = wrapper(this.wrapped, ...opts);
-    // enable chaining
-    return this;
-  };
-
-  return this;
+function wrap(main) {
+  return new WrapUtil(main);
 }
 
 module.exports = { wrap };

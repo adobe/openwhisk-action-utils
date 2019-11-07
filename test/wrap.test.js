@@ -56,4 +56,27 @@ describe('Wrapper Tests', () => {
 
     assert.equal(wrapped('John'), 'hello John Paul Jones');
   });
+
+  it('wrap works concurrently', () => {
+    const original1 = (name) => `hello ${name}`;
+    const wrapper1 = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
+
+    const original2 = (name) => `hi ${name}`;
+    const wrapper2 = (fn, lastname) => (firstname) => fn(`${firstname} and ${lastname}`);
+
+
+    const wrapped1 = wrap()
+      .with(wrapper1, 'Paul')
+      .run(original1);
+
+    const wrapped2 = wrap()
+      .with(wrapper2, 'Paul')
+      .run(original2);
+
+    const result1 = wrapped1('John');
+    const result2 = wrapped2('John');
+
+    assert.equal(result1, 'hello John Paul');
+    assert.equal(result2, 'hi John and Paul');
+  });
 });
