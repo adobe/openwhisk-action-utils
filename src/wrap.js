@@ -9,7 +9,16 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+
 /**
+ * Plugin function that returns the wrapper function.
+ * @callback ActionFunction
+ * @param {*} ...opts The options passed to the action.
+ * @returns {*} A result.
+ */
+
+/**
+ * Plugin function that returns the wrapper function.
  * The `wrap` function can be used to create a chain of wrappers around
  * a `main` function. Usage:
  *
@@ -24,18 +33,32 @@
  * .with(epsagon)
  * .run(main);
  * ```
+ * @callback PluginFunction
+ * @param {ActionFunction} fn The function that this wrapper needs to invoke.
+ * @param {*} ...opts The options passed to the action.
+ * @returns {ActionFunction} An action function that can be invoked.
  */
 function wrap() {
   this.inner = () => { };
   this.wrapped = (...opts) => this.inner(...opts);
 
+  /**
+  * @function run
+  * @param {ActionFunction} fn The action function to run.
+  * @returns {ActionFunction} A function that can be invoked as action.
+  */
   this.run = (fn) => {
     // replace the innermost function
     this.inner = fn;
     // and return the full wrapper
     return this.wrapped;
   };
-
+  /**
+  * @function with
+  * @param {PluginFunction} wrapper The wrapper to apply to the action
+  * @param {*} ...opts the options passed into the wrapper
+  * @returns {PluginFunction} The chainable wrapper
+  */
   this.with = (wrapper, ...opts) => {
     // add another layer of wrapping
     this.wrapped = wrapper(this.wrapped, ...opts);

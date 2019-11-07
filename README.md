@@ -11,22 +11,22 @@
 
 ## Usage
 
-### Chaining
+### Wrapping
 
-When you have a large number of wrapper functions around your `main` function, use the `chain`
-helper to create a chain of wrappers.
+When you have a large number of wrapper functions around your `main` function, use the `wrap`
+helper to create a series of wrappers.
 
 ```javascript
-const { chain } = require('@adobe/openwhisk-action-utils');
+const { wrap } = require('@adobe/openwhisk-action-utils');
 
 async main(params) {
     ...my action code...
 }
 
-module.exports.main = chain()
-   .use(logger) // see @adobe/openwhisk-action-utils
-   .use(status) // see @adobe/helix-status
-   .use(epsagon) // see https://github.com/epsagon/epsagon-node#getting-started-apache-openwhisk
+module.exports.main = wrap()
+   .with(logger) // see @adobe/openwhisk-action-utils
+   .with(status) // see @adobe/helix-status
+   .with(epsagon) // see https://github.com/epsagon/epsagon-node#getting-started-apache-openwhisk
    .run(main);
 ```
 
