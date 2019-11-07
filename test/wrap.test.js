@@ -31,6 +31,18 @@ describe('Wrapper Tests', () => {
     assert.equal(wrapped('John'), 'hello John Paul');
   });
 
+  it('wrap wraps with alternative syntax', () => {
+    const original = (name) => `hello ${name}`;
+
+    const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
+
+    const wrapped = wrap(original)
+      .with(wrapper, 'Paul')
+      .run();
+
+    assert.equal(wrapped('John'), 'hello John Paul');
+  });
+
   it('wrap wraps async', async () => {
     const original = (name) => Promise.resolve(`hello ${name}`);
 

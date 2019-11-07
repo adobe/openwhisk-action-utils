@@ -22,7 +22,9 @@ class WrapUtil {
   */
   run(fn) {
     // replace the innermost function
-    this.inner = fn;
+    if (fn) {
+      this.inner = fn;
+    }
     // and return the full wrapper
     return this.wrapped;
   }
