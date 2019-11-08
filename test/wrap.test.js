@@ -16,7 +16,7 @@ const { wrap } = require('../src/wrap');
 describe('Wrapper Tests', () => {
   it('wrap leaves initial function unchanged', () => {
     const fn = () => 'bar';
-    assert.equal(wrap().run(fn)(), 'bar');
+    assert.equal(wrap(fn)(), 'bar');
   });
 
   it('wrap wraps once', () => {
@@ -24,9 +24,8 @@ describe('Wrapper Tests', () => {
 
     const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
-    const wrapped = wrap()
-      .with(wrapper, 'Paul')
-      .run(original);
+    const wrapped = wrap(original)
+      .with(wrapper, 'Paul');
 
     assert.equal(wrapped('John'), 'hello John Paul');
   });
@@ -37,8 +36,7 @@ describe('Wrapper Tests', () => {
     const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
     const wrapped = wrap(original)
-      .with(wrapper, 'Paul')
-      .run();
+      .with(wrapper, 'Paul');
 
     assert.equal(wrapped('John'), 'hello John Paul');
   });
@@ -48,9 +46,8 @@ describe('Wrapper Tests', () => {
 
     const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
-    const wrapped = wrap()
-      .with(wrapper, 'Paul')
-      .run(original);
+    const wrapped = wrap(original)
+      .with(wrapper, 'Paul');
 
     const result = await wrapped('John');
     assert.equal(result, 'hello John Paul');
@@ -61,12 +58,39 @@ describe('Wrapper Tests', () => {
 
     const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
-    const wrapped = wrap()
+    const wrapped = wrap(original)
       .with(wrapper, 'Jones')
-      .with(wrapper, 'Paul')
-      .run(original);
+      .with(wrapper, 'Paul');
 
     assert.equal(wrapped('John'), 'hello John Paul Jones');
+  });
+
+  it('wrap wraps in correct order', () => {
+    const original = (count) => count;
+
+    const wrapper = (fn, num) => (old) => fn(`${old} ${num}`);
+
+    const wrapped = wrap(original)
+      .with(wrapper, 'fifth')
+      .with(wrapper, 'forth')
+      .with(wrapper, 'third')
+      .with(wrapper, 'second');
+
+    assert.equal(wrapped('first'), 'first second third forth fifth');
+  });
+
+  it('run is optional', () => {
+    const original = (count) => count;
+
+    const wrapper = (fn, num) => (old) => fn(`${old} ${num}`);
+
+    const wrapped = wrap(original)
+      .with(wrapper, 'fifth')
+      .with(wrapper, 'forth')
+      .with(wrapper, 'third')
+      .with(wrapper, 'second');
+
+    assert.equal(wrapped('first'), 'first second third forth fifth');
   });
 
   it('wrap works concurrently', () => {
@@ -77,13 +101,11 @@ describe('Wrapper Tests', () => {
     const wrapper2 = (fn, lastname) => (firstname) => fn(`${firstname} and ${lastname}`);
 
 
-    const wrapped1 = wrap()
-      .with(wrapper1, 'Paul')
-      .run(original1);
+    const wrapped1 = wrap(original1)
+      .with(wrapper1, 'Paul');
 
-    const wrapped2 = wrap()
-      .with(wrapper2, 'Paul')
-      .run(original2);
+    const wrapped2 = wrap(original2)
+      .with(wrapper2, 'Paul');
 
     const result1 = wrapped1('John');
     const result2 = wrapped2('John');

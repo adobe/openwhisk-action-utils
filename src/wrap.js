@@ -9,57 +9,46 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-/*
-* @callback PluginFunction
-* @param {ActionFunction} fn The function that this wrapper needs to invoke.
-* @param {*} ...opts The options passed to the action.
-* @returns {ActionFunction} An action function that can be invoked.
-*/
-class WrapUtil {
-  constructor(main = () => { }) {
-    this.inner = main;
-    this.wrapped = (...opts) => this.inner(...opts);
-  }
-
-  /**
-  * @function run
-  * @param {ActionFunction} fn The action function to run.
-  * @returns {ActionFunction} A function that can be invoked as action.
-  */
-  run(fn) {
-    // replace the innermost function
-    if (fn) {
-      this.inner = fn;
-    }
-    // and return the full wrapper
-    return this.wrapped;
-  }
-
-  /**
-  * @function with
-  * @param {PluginFunction} wrapper The wrapper to apply to the action
-  * @param {*} ...opts the options passed into the wrapper
-  * @returns {WrapUtil} this
-  */
-  with(wrapper, ...opts) {
-    // add another layer of wrapping
-    this.wrapped = wrapper(this.wrapped, ...opts);
-    // enable chaining
-    return this;
-  }
-}
 
 /**
- * Plugin function that returns the wrapper function.
  * @callback ActionFunction
- * @param {*} ...opts The options passed to the action.
- * @returns {*} A result.
+ * This is your `main` function that does the actual work.
+ * @param {object} params the parameters of the action function
+ * @returns {object} a result
  */
 
 /**
- * Plugin function that returns the wrapper function.
- * The `wrap` function can be used to create a chain of wrappers around
- * a `main` function. Usage:
+ * @callback WrappingFunction
+ * A function that wraps (and invokes your main function). It can be used
+ * to decorate inputs or outputs, or to provide additional functionality
+ * like logging, tracing, debugging, etc.
+ * @param {ActionFunction} main your main function
+ * @param {...*} opts configuration options for the wrapping function
+ * @returns {ActionFunction} a new function with the same signature as your original main function
+ */
+
+/**
+ * @callback WrapFunction
+ * A method on a `WrappableActionFunction` that wraps this action function
+ * with a wrapping function.
+ * @param {WrappingFunction} wrapper the wrapping function to apply
+ * @param {...*} opts options for the wrapping function
+ */
+
+/**
+ * @typedef WrappableActionFunction
+ * @extends function
+ * An `ActionFunction` that has been augmented to become wrappable using the `with` method.
+ *
+ * @property {WrapFunction} with wraps the current function with the provided wrapping function
+ */
+
+/**
+ * A function that makes your action function (i.e. `main`) wrappable,
+ * so that using `with` a number of wrappers can be applied. This allows
+ * you to export the result as a new function.
+ *
+ * Usage:
  *
  * ```javascript
  * async main(params) {
@@ -69,12 +58,22 @@ class WrapUtil {
  * module.exports.main = wrap(main)
  * .with(logger)
  * .with(status)
- * .with(epsagon)
- * .run();
+ * .with(epsagon);
  * ```
+ * Note: the execution order is that the last wrapper added will be executed first.
+ * @param {ActionFunction} main the `main` function to prepare for wrapping
+ * @returns {WrappableActionFunction} the same main function, now including a `with` method
  */
 function wrap(main) {
-  return new WrapUtil(main);
+  const withfn = function withfn(wrapper, ...opts) {
+    const wrapped = wrapper(this, ...opts);
+    wrapped.with = withfn;
+    return wrapped;
+  };
+
+  // eslint-disable-next-line no-param-reassign
+  main.with = withfn;
+  return main;
 }
 
 module.exports = { wrap };
