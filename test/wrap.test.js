@@ -93,7 +93,7 @@ describe('Wrapper Tests', () => {
     assert.equal(wrapped('first'), 'first second third forth fifth');
   });
 
-  it('wrap works concurrently', () => {
+  it('wrap works on multiple functions at the same time', () => {
     const original1 = (name) => `hello ${name}`;
     const wrapper1 = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
 
