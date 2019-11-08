@@ -9,6 +9,12 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+/*
+* @callback PluginFunction
+* @param {ActionFunction} fn The function that this wrapper needs to invoke.
+* @param {*} ...opts The options passed to the action.
+* @returns {ActionFunction} An action function that can be invoked.
+*/
 class WrapUtil {
   constructor(main = () => { }) {
     this.inner = main;
@@ -60,16 +66,12 @@ class WrapUtil {
  *   //…my action code…
  * }
  *
- * module.exports.main = wrap()
+ * module.exports.main = wrap(main)
  * .with(logger)
  * .with(status)
  * .with(epsagon)
- * .run(main);
+ * .run();
  * ```
- * @callback PluginFunction
- * @param {ActionFunction} fn The function that this wrapper needs to invoke.
- * @param {*} ...opts The options passed to the action.
- * @returns {ActionFunction} An action function that can be invoked.
  */
 function wrap(main) {
   return new WrapUtil(main);
