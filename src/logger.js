@@ -18,8 +18,8 @@ const http = require('http');
 const bunyan = require('bunyan');
 const dotenv = require('dotenv');
 const {
-  BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger, ConsoleLogger, messageFormatSimple,
-  JsonifyForLog,
+  BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger,
+  JsonifyForLog, MultiLogger,
 } = require('@adobe/helix-log');
 const createPapertrailLogger = require('./logger-papertrail');
 const createCoralogixLogger = require('./logger-coralogix');
@@ -64,24 +64,29 @@ JsonifyForLog.impl(http.ServerResponse, (res) => {
   };
 });
 
-const openhwiskConsoleLogger = new ConsoleLogger({
-  level: config().LOG_LEVEL,
-  stream: process.stdout,
-  formatter: (msg, opts) => {
-    // remove last message argument if object. this suppresses the bunyan fields being
-    // logged to the activation logs. once helix-log supports proper data logging,
-    // this can be simplified.
-    if (msg.length > 0) {
-      const lst = msg[msg.length - 1];
-      if (typeof lst === 'object' && !(lst instanceof Error)) {
-        // eslint-disable-next-line no-param-reassign
-        msg = msg.slice(0, msg.length - 1);
-      }
-    }
-    return messageFormatSimple(msg, opts);
-  },
-});
+/**
+ * Special logger for openwhisk actions that adds the activation id, action name and
+ * transaction id to each log message.
+ */
+class OpenWhiskLogger extends MultiLogger {
+  constructor(logger, opts) {
+    super(logger, {
+      ...opts,
+      filter: (fields) => ({
+        ow: {
+          activationId: process.env.__OW_ACTIVATION_ID || 'n/a',
+          actionName: process.env.__OW_ACTION_NAME || 'n/a',
+          transactionId: process.env.__OW_TRANSACTION_ID || 'n/a',
+        },
+        ...fields,
+      }),
+    });
+  }
+}
 
+/**
+ * Bunyan serializers
+ */
 const serializers = {
   res: (res) => {
     if (!res || !res.statusCode) {
@@ -97,18 +102,6 @@ const serializers = {
   err: bunyan.stdSerializers.err,
 };
 
-function addLogger(parent, name, createFN, cfg, params) {
-  const logger = createFN(cfg, params);
-  if (!logger) {
-    return false;
-  }
-  if (parent.loggers.has(name)) {
-    return true;
-  }
-  parent.loggers.set(name, logger);
-  return true;
-}
-
 /**
  * Initializes a helix-log logger for use with an openwhisk action.
  * It ensures that, the given logger has a default console logger configured. It also looks for
@@ -119,19 +112,26 @@ function addLogger(parent, name, createFN, cfg, params) {
  *                                            `rootLogger`.
  */
 function setupHelixLogger(params, logger = rootLogger) {
-  // only overwrite the default console logger if there is one
-  if (logger.loggers.has('default')) {
-    // replace default logger with our own console logger
-    logger.loggers.set('default', openhwiskConsoleLogger);
-  }
+  // add openwhisklogger to helix-log logger
+  if (!logger.loggers.has('OpenWhiskLogger')) {
+    const owLogger = new OpenWhiskLogger({});
+    logger.loggers.set('OpenWhiskLogger', owLogger);
 
-  if (addLogger(logger, 'CoralogixLogger', createCoralogixLogger, config(), params)) {
-    // eslint-disable-next-line no-console
-    console.log('configured coralogix logger.');
-  }
-  if (addLogger(logger, 'PapertraiLogger', createPapertrailLogger, config(), params)) {
-    // eslint-disable-next-line no-console
-    console.log('configured papertrail logger.');
+    // add coralogix logger
+    const coralogix = createCoralogixLogger(config(), params);
+    if (coralogix) {
+      owLogger.loggers.set('CoralogixLogger', coralogix);
+      // eslint-disable-next-line no-console
+      console.log('configured coralogix logger.');
+    }
+
+    // add papertail logger
+    const papertrail = createPapertrailLogger(config(), params);
+    if (papertrail) {
+      owLogger.loggers.set('PapertraiLogger', papertrail);
+      // eslint-disable-next-line no-console
+      console.log('configured papertrail logger.');
+    }
   }
   return logger;
 }
@@ -235,6 +235,4 @@ async function wrap(fn, params = {}, logger = rootLogger) {
 module.exports = {
   wrap,
   init,
-  setupHelixLogger,
-  setupBunyanLogger,
 };

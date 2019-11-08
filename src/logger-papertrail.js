@@ -11,7 +11,6 @@
  */
 
 /* eslint-disable no-underscore-dangle */
-
 const { messageFormatJson, numericLogLevel } = require('@adobe/helix-log');
 const { SyslogStream } = require('./syslog-stream.js');
 
@@ -64,13 +63,6 @@ function createPapertrailLogger(config, params) {
       port: Number.parseInt(PAPERTRAIL_PORT, 10),
       tls: PAPERTRAIL_TLS !== 'false',
       level: PAPERTRAIL_LOG_LEVEL,
-      formatter: (msg, opts) => Object.assign(messageFormatJson(msg, opts), {
-        ow: {
-          activationId: process.env.__OW_ACTIVATION_ID,
-          actionName: process.env.__OW_ACTION_NAME,
-          transactionId: process.env.__OW_TRANSACTION_ID,
-        },
-      }),
     });
   }
   return papertrailLogger;
