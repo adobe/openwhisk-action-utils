@@ -39,7 +39,7 @@ class WrapUtil {
   * @function with
   * @param {PluginFunction} wrapper The wrapper to apply to the action
   * @param {*} ...opts the options passed into the wrapper
-  * @returns {PluginFunction} The chainable wrapper
+  * @returns {WrapUtil} this
   */
   with(wrapper, ...opts) {
     // add another layer of wrapping
