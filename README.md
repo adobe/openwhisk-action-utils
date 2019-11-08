@@ -23,7 +23,7 @@ async main(params) {
     ...my action code...
 }
 
-module.exports.main = wrap()
+module.exports.main = wrap(main)
    .with(logger) // see @adobe/openwhisk-action-utils
    .with(status) // see @adobe/helix-status
    .with(epsagon); // see https://github.com/epsagon/epsagon-node#getting-started-apache-openwhisk
