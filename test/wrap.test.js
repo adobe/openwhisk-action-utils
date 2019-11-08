@@ -44,7 +44,7 @@ describe('Wrapper Tests', () => {
   it('wrap wraps async', async () => {
     const original = (name) => Promise.resolve(`hello ${name}`);
 
-    const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
+    const wrapper = (fn, lastname) => (firstname) => Promise.resolve(fn(`${firstname} ${lastname}`));
 
     const wrapped = wrap(original)
       .with(wrapper, 'Paul');
