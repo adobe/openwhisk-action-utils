@@ -1,3 +1,10 @@
+# [2.4.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.7...v2.4.0) (2019-11-11)
+
+
+### Features
+
+* **logger:** improve logging ([#32](https://github.com/adobe/openwhisk-action-utils/issues/32)) ([fa899a9](https://github.com/adobe/openwhisk-action-utils/commit/fa899a9da33393c5731921a35eb263f116835088)), closes [#31](https://github.com/adobe/openwhisk-action-utils/issues/31) [#26](https://github.com/adobe/openwhisk-action-utils/issues/26)
+
 ## [2.3.7](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.6...v2.3.7) (2019-10-29)
 
 
