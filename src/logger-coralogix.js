@@ -11,10 +11,7 @@
  */
 
 /* eslint-disable no-underscore-dangle */
-
-const {
-  CoralogixLogger, messageFormatJson,
-} = require('@adobe/helix-log');
+const { CoralogixLogger } = require('@adobe/helix-log');
 
 let coralogixLogger = null;
 
@@ -40,13 +37,6 @@ function createCoralogixLogger(config, params) {
     const subsystemName = CORALOGIX_SUBSYSTEM_NAME || owPackage || 'n/a';
     coralogixLogger = new CoralogixLogger(CORALOGIX_API_KEY, applicationName, subsystemName, {
       level: CORALOGIX_LOG_LEVEL || config.LOG_LEVEL,
-      formatter: (msg, opts) => Object.assign(messageFormatJson(msg, opts), {
-        ow: {
-          activationId: process.env.__OW_ACTIVATION_ID,
-          actionName: process.env.__OW_ACTION_NAME,
-          transactionId: process.env.__OW_TRANSACTION_ID,
-        },
-      }),
     });
   }
   return coralogixLogger;
