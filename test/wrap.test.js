@@ -30,17 +30,6 @@ describe('Wrapper Tests', () => {
     assert.equal(wrapped('John'), 'hello John Paul');
   });
 
-  it('wrap wraps with alternative syntax', () => {
-    const original = (name) => `hello ${name}`;
-
-    const wrapper = (fn, lastname) => (firstname) => fn(`${firstname} ${lastname}`);
-
-    const wrapped = wrap(original)
-      .with(wrapper, 'Paul');
-
-    assert.equal(wrapped('John'), 'hello John Paul');
-  });
-
   it('wrap wraps async', async () => {
     const original = (name) => Promise.resolve(`hello ${name}`);
 
@@ -65,10 +54,10 @@ describe('Wrapper Tests', () => {
     assert.equal(wrapped('John'), 'hello John Paul Jones');
   });
 
-  it('wrap wraps in correct order', () => {
+  it('wrap wraps in correct order', async () => {
     const original = (count) => count;
 
-    const wrapper = (fn, num) => (old) => fn(`${old} ${num}`);
+    const wrapper = (fn, num) => async (old) => fn(`${old} ${num}`);
 
     const wrapped = wrap(original)
       .with(wrapper, 'fifth')
@@ -76,21 +65,7 @@ describe('Wrapper Tests', () => {
       .with(wrapper, 'third')
       .with(wrapper, 'second');
 
-    assert.equal(wrapped('first'), 'first second third forth fifth');
-  });
-
-  it('run is optional', () => {
-    const original = (count) => count;
-
-    const wrapper = (fn, num) => (old) => fn(`${old} ${num}`);
-
-    const wrapped = wrap(original)
-      .with(wrapper, 'fifth')
-      .with(wrapper, 'forth')
-      .with(wrapper, 'third')
-      .with(wrapper, 'second');
-
-    assert.equal(wrapped('first'), 'first second third forth fifth');
+    assert.equal(await wrapped('first'), 'first second third forth fifth');
   });
 
   it('wrap works on multiple functions at the same time', () => {
