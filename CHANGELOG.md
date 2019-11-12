@@ -1,3 +1,18 @@
+# [2.5.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.4.0...v2.5.0) (2019-11-12)
+
+
+### Bug Fixes
+
+* **wrap:** enable concurrent wrappers ([cdda6b7](https://github.com/adobe/openwhisk-action-utils/commit/cdda6b705374c3e301884b77c77845b970379825)), closes [/github.com/adobe/openwhisk-action-utils/pull/29#discussion_r343393239](https://github.com//github.com/adobe/openwhisk-action-utils/pull/29/issues/discussion_r343393239)
+
+
+### Features
+
+* **chain:** expose `chain` function in module root ([e8c9548](https://github.com/adobe/openwhisk-action-utils/commit/e8c9548a42cf776b795d23de17b61a6e115c1fad))
+* **chain:** provide action chaining mechanism ([0ece0ee](https://github.com/adobe/openwhisk-action-utils/commit/0ece0ee863739e68f2c801ac9f8c0fee4a0c3240)), closes [#25](https://github.com/adobe/openwhisk-action-utils/issues/25)
+* **wrap:** enable alternative syntax ([ee10906](https://github.com/adobe/openwhisk-action-utils/commit/ee10906b23951b1f426fc40a9016095d7f9f38fe))
+* **wrap:** support rest args for wrappers ([ac3d806](https://github.com/adobe/openwhisk-action-utils/commit/ac3d806b8434acb572c83fd23212569db055d654)), closes [/github.com/adobe/openwhisk-action-utils/pull/29#discussion_r343392926](https://github.com//github.com/adobe/openwhisk-action-utils/pull/29/issues/discussion_r343392926)
+
 # [2.4.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.3.7...v2.4.0) (2019-11-11)
 
 
