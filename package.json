@@ -9,10 +9,12 @@
     "openwhisk"
   ],
   "main": "src/index.js",
+  "types": "src/index.d.ts",
   "scripts": {
     "lint": "./node_modules/.bin/eslint .",
     "test": "nyc --reporter=text --reporter=lcov mocha --lines 100 --funcs 100 --branch 95",
     "test-ci": "npm run lint && npm run test && codecov",
+    "docs": "npx jsdoc2md -t jsdoc2md/README.hbs src/*.js > README.md; echo",
     "semantic-release": "semantic-release"
   },
   "dependencies": {
@@ -34,6 +36,7 @@
     "eslint-plugin-import": "^2.18.2",
     "express": "^4.17.1",
     "ghooks": "^2.0.4",
+    "jsdoc-to-markdown": "^5.0.2",
     "lint-staged": "^9.4.2",
     "lodash": "^4.17.15",
     "mocha": "^6.2.2",

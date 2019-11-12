@@ -9,20 +9,4 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-
-const logger = require('./logger.js');
-const {
-  errorHandler, cacheControl, logRequest, asyncHandler,
-} = require('./middleware.js');
-const expressify = require('./expressify.js');
-const { wrap } = require('./wrap');
-
-module.exports = {
-  logger,
-  logRequest,
-  errorHandler,
-  cacheControl,
-  asyncHandler,
-  expressify,
-  wrap,
-};
+export * from './wrap';
