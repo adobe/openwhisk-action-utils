@@ -12,6 +12,12 @@
 const crypto = require('crypto');
 
 /**
+ * @module middleware
+ * @private
+ * @todo: ensure good jsdoc
+ */
+
+/**
  * Error handler.
  *
  *

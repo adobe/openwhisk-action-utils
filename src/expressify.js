@@ -10,6 +10,11 @@
  * governing permissions and limitations under the License.
  */
 /* eslint-disable no-underscore-dangle */
+/**
+ * @module expressify
+ * @private
+ * @todo: ensure good jsdoc
+ */
 
 const serverless = require('serverless-http');
 
