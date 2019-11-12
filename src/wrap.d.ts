@@ -48,19 +48,8 @@ export declare interface WrappableActionFunction {
 
   /**
    * Wraps `this` action function with a wrapper created by the `fn`.
-   *
-   * @example
-   *
-   * ```js
-   * function tracer(fn, level) {
-   *   return (params) => {
-   *     log[level]('enter');
-   *     const ret = fn(params);
-   *     log[level]('exit');
-   *     return ret;
-   *   }
-   * }
-   * ```
+   * @param {WrapFunction} fn A wrap function that creates the wrapper.
+   * @param {...*} opts Additional configuration options for the wrapping function.
    */
   with(fn: WrapFunction, ...opts: any[]): WrappableActionFunction;
 }
@@ -69,6 +58,19 @@ export declare interface WrappableActionFunction {
  * A function that wraps (and invokes your main function). It can be used
  * to decorate inputs or outputs, or to provide additional functionality
  * like logging, tracing, debugging, etc.
+ *
+ * @example
+ *
+ * ```js
+ * function tracer(fn, level) {
+ *   return (params) => {
+ *     log[level]('enter');
+ *     const ret = fn(params);
+ *     log[level]('exit');
+ *     return ret;
+ *   }
+ * }
+ * ```
  *
  * @param {ActionFunction} main your main function
  * @param {...*} opts configuration options for the wrapping function
