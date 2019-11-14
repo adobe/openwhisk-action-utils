@@ -1,6 +1,6 @@
 {
   "name": "@adobe/openwhisk-action-utils",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Utilities for OpenWhisk Actions",
   "license": "Apache-2.0",
   "repository": "https://github.com/adobe/openwhisk-action-utils",
