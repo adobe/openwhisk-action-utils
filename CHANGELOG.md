@@ -1,3 +1,10 @@
+# [2.6.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.5.0...v2.6.0) (2019-11-14)
+
+
+### Features
+
+* **logger:** make logger to be usable in with the new `wrap` tool ([#36](https://github.com/adobe/openwhisk-action-utils/issues/36)) ([08f6574](https://github.com/adobe/openwhisk-action-utils/commit/08f6574b63cab445d8d31b355f9c111ac5adc657)), closes [#35](https://github.com/adobe/openwhisk-action-utils/issues/35)
+
 # [2.5.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.4.0...v2.5.0) (2019-11-12)
 
 
