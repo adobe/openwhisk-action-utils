@@ -46,6 +46,16 @@ describe('Loggers', () => {
     nock.enableNetConnect();
   });
 
+  it('init does not fail if __ow_logger is not a bunyan logger.', () => {
+    logger.init({
+      __ow_logger: 42,
+    }, myRootLogger);
+
+    logger.init({
+      __ow_logger: {},
+    }, myRootLogger);
+  });
+
   it('init sets up openwhisk logging and keeps default unaffected', () => {
     logger.init({}, myRootLogger);
     myRootLogger.loggers.set('default', memLogger);
