@@ -11,14 +11,38 @@
  */
 /* eslint-disable no-underscore-dangle */
 /**
+ * Helper to turn a OpenWhisk web action into a express request which can be handled with normal
+ * express handlers.
+ *
+ * **Usage:**
+ *
+ * ```js
+ * const { expressify, errorHandler } = require('@adobe/openwhisk-action-utils');
+ *
+ * async function main(params) {
+ *   const app = express();
+ *   app.use(cookieParser());
+ *   app.use(express.static('static'));
+ *   app.get('/', homepageHandler);
+ *   app.get('/ping', pingHandler);
+ *   app.use(errorHandler(log));
+ *
+ *   return expressify(app)(params);
+ * }
+ * ```
  * @module expressify
- * @private
- * @todo: ensure good jsdoc
  */
 
 const serverless = require('serverless-http');
 
-module.exports = function expressify(app) {
+/**
+ * Creates an OpenWhisk action function that uses the express framework to handle the invocation.
+ *
+ * @see https://expressjs.com/en/4x/api.html#app
+ * @param {ExpressApp} app The express application
+ * @returns {module:wrap~ActionFunction} An action function.
+ */
+function expressify(app) {
   return async (params) => {
     const requestBodyAdapter = async (req, res, next) => {
       // `serverless-http` converts the request.body by default to a buffer,
@@ -54,7 +78,7 @@ module.exports = function expressify(app) {
     delete result.isBase64Encoded;
     return result;
   };
-};
+}
 
 const BINARY_MEDIA_TYPES = [
   'audio/*',
@@ -125,3 +149,5 @@ const BINARY_CONTENT_TYPES = [
   '*/json',
   'multipart/*',
   ...BINARY_MEDIA_TYPES].map((glob) => new RegExp(glob.replace(/\./g, '\\.').replace(/\*/g, '.*')));
+
+module.exports = expressify;
