@@ -179,6 +179,11 @@ function setupBunyanLogger(params, logger = rootLogger) {
   }
   const { __ow_logger: log } = params;
 
+  // check for bunyan methods
+  if (!log.streams || !log.addStream) {
+    return log;
+  }
+
   // check if not already added
   if (!log.streams.find((s) => s.name === 'BunyanStreamInterface')) {
     log.addStream({
