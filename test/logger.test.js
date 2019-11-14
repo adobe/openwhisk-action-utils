@@ -20,7 +20,7 @@ const {
   MultiLogger, MemLogger, SimpleInterface,
 } = require('@adobe/helix-log');
 const logger = require('../src/logger.js');
-
+const { wrap } = require('../src/wrap');
 
 describe('Loggers', () => {
   let myRootLogger;
@@ -127,6 +127,41 @@ describe('Loggers', () => {
     }
     myRootLogger.loggers.set('mylogger', memLogger);
     const result = await logger.wrap(main, { path: '/foo', SECRET_KEY: 'foobar' }, myRootLogger);
+
+    assert.deepEqual(result, { body: 'ok' });
+
+    assert.deepEqual(memLogger.buf, [{
+      level: 'trace',
+      message: ['before'],
+      params: {
+        path: '/foo',
+      },
+      timestamp: '1970-01-01T00:00:00.000Z',
+    }, {
+      level: 'info',
+      message: ['Hello, world.'],
+      timestamp: '1970-01-01T00:00:00.000Z',
+    }, {
+      level: 'trace',
+      message: ['result'],
+      result: {
+        body: 'ok',
+      },
+      timestamp: '1970-01-01T00:00:00.000Z',
+    }]);
+  });
+
+  it('logger can be used as with wrap chain', async () => {
+    async function main(params) {
+      const { __ow_logger: log } = params;
+      log.info('Hello, world.');
+      return {
+        body: 'ok',
+      };
+    }
+    myRootLogger.loggers.set('mylogger', memLogger);
+    const action = wrap(main).with(logger, myRootLogger);
+    const result = await action({ path: '/foo', SECRET_KEY: 'foobar' });
 
     assert.deepEqual(result, { body: 'ok' });
 

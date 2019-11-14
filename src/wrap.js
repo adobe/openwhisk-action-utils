@@ -12,7 +12,7 @@
 /**
  * Helper function to easily chain OpenWhisk actions.
  *
- * Usage:
+ * **Usage:**
  *
  * ```js
  * const { wrap } = require('@adobe/openwhisk-action-utils');
@@ -22,9 +22,9 @@
  * }
  *
  * module.exports.main = wrap(main)
- * .with(epsagon)
- * .with(status)
- * .with(logger);
+ *   .with(epsagon)
+ *   .with(status)
+ *   .with(logger);
  * ```
  *
  * @module wrap
