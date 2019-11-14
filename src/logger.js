@@ -214,7 +214,7 @@ function init(params, logger = rootLogger) {
  * It logs invocation details on `trace` level before and after the actual action invocation.
  * it also creates a bunyan logger and binds it to the `__ow_logger` params.
  *
- * @param {ActionFunction} fn - original OpenWhisk action main function
+ * @param {module:wrap~ActionFunction} fn - original OpenWhisk action main function
  * @param {*} params - OpenWhisk action params
  * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
@@ -273,10 +273,11 @@ async function wrap(fn, params = {}, logger = rootLogger) {
  * ```
  *
  * @function logger
- * @param {ActionFunction} fn - original OpenWhisk action main function
+ * @param {module:wrap~ActionFunction} fn - original OpenWhisk action main function
  * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
- * @returns {ActionFunction} a new function with the same signature as your original main function
+ * @returns {module:wrap~ActionFunction} a new function with the same signature as your original
+ *                                       main function
  */
 function wrapper(fn, logger = rootLogger) {
   return (params) => wrap(fn, params, logger);

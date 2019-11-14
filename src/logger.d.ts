@@ -17,8 +17,7 @@ import { MultiLogger } from '@adobe/helix-log';
  * Logger from Bunyan
  * @see https://github.com/trentm/node-bunyan
  */
-interface BunyanLogger {
-}
+declare interface BunyanLogger {}
 
 /**
  * Wrap function that returns an OpenWhisk function that is enabled with logging.

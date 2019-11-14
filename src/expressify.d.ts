@@ -9,7 +9,19 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
-export * from './wrap';
-export * from './logger';
-export * from './expressify';
-export * from './middleware';
+
+import { ActionFunction } from './wrap';
+
+/**
+ * Express App
+ * @see https://expressjs.com/en/4x/api.html#app
+ */
+declare interface ExpressApp {}
+
+/**
+ * Creates an OpenWhisk action function that uses the express framework to handle the invocation.
+ *
+ * @param {ExpressApp} app The express application
+ * @returns {ActionFunction} An action function.
+ */
+export declare function expressify(app: ExpressApp): ActionFunction;

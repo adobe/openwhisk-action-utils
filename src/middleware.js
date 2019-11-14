@@ -12,20 +12,60 @@
 const crypto = require('crypto');
 
 /**
+ * Helper functions for expressified actions.
+ *
+ * **Usage:**
+ *
+ * ```js
+ * const {
+ *   expressify, logRequest, errorHandler, asyncHandler, cacheControl,
+ * } = require('@adobe/openwhisk-action-utils');
+ *
+ * async function startHandler(params, req, res) {
+ *    res.send('Hello, world.');
+ * }
+
+ * async function main(params) {
+ *   const { __ow_logger: log } = params;
+ *   const app = express();
+ *   app.use(logRequest(log));
+ *   app.use(cacheControl());
+ *   app.get('/', asyncHandler(startHandler, params));
+ *   app.get('/ping', asyncHandler(pingHandler, params));
+ *   app.use(errorHandler(log));
+ *
+ *   return expressify(app)(params);
+ * }
+ * ```
+ *
  * @module middleware
- * @private
- * @todo: ensure good jsdoc
  */
 
 /**
- * Error handler.
+ * Extended middleware function to be use with the {@link module:middleware~asyncHandler}.
  *
+ * @see https://expressjs.com/en/4x/api.html#middleware-callback-function-examples
  *
- * ```
- * ...
+ * @callback ActionMiddlewareFunction
+ * @param {*} params The action params
+ * @param {ExpressRequest} req The express request
+ * @param {ExpressResponse} res The express response
+ * @param {ExpressMiddleware} next The next handler in chain.
+ */
+
+/**
+ * Error handler. Reports errors that happen during the request processing and responds
+ * with a `500` if not already set.
+ *
+ * @example <caption></caption>
+ *
+ * ```js
  * // install last
  * app.use(errorHandler(log));
  * ```
+ *
+ * @param {BunyanLogger} log The logger to use for reporting errors.
+ * @returns {ExpressMiddleware} an express middleware function.
  */
 function errorHandler(log) {
   return (err, req, res, next) => {
@@ -42,11 +82,16 @@ function errorHandler(log) {
 }
 
 /**
- * Ensures cache control.
+ * Ensures cache control. Sets cache control headers.
+ *
+ * @example <caption></caption>
  *
  * ```
  * app.use(cacheControl());
  * ```
+ *
+ * @param {string} [value = no-store, private, must-revalidate] Cache control header value.
+ * @returns {ExpressMiddleware} an express middleware function.
  */
 function cacheControl(value = 'no-store, private, must-revalidate') {
   return (req, res, next) => {
@@ -58,14 +103,19 @@ function cacheControl(value = 'no-store, private, must-revalidate') {
 }
 
 /**
- * Creates a bunyan child logger for the request and adds it to the request.
- * @param {Bunyan} logger - the bunyan logger
+ * Creates a bunyan child logger for the request and adds it to the request. This ensures that
+ * important header values, like `x-request-id` are included in every log entry. It also
+ * logs the request and response lines.
  *
- * ```
+ * @example <caption></caption>
+ *
+ * ```js
  * // install first
  * app.use(logRequest(log));
- * ...
  * ```
+ *
+ * @param {BunyanLogger} logger - the bunyan logger
+ * @returns {ExpressMiddleware} an express middleware function.
  */
 function logRequest(logger) {
   return (req, res, next) => {
@@ -104,9 +154,9 @@ function logRequest(logger) {
  * Wraps the route middleware so it can bind the params and catch potential promise rejections
  * during the async invocation.
  *
- * @param fn {Function} the handler
- * @param params {object} action params
- * @returns {Function} the expressjs router function
+ * @param {module:middleware~ActionMiddlewareFunction} fn an extended express middleware function
+ * @param {*} params Action params to be pass to the handler.
+ * @returns {ExpressMiddleware} an express middleware function.
  */
 function asyncHandler(fn, params) {
   return (req, res, next) => (Promise.resolve(fn(params, req, res, next)).catch(next));

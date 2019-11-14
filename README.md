@@ -13,6 +13,23 @@
 ## Modules
 
 <dl>
+<dt><a href="#module_expressify">expressify</a></dt>
+<dd><p>Helper to turn a OpenWhisk web action into a express request which can be handled with normal
+express handlers.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-js">const { expressify, errorHandler } = require(&#39;@adobe/openwhisk-action-utils&#39;);
+
+async function main(params) {
+  const app = express();
+  app.use(cookieParser());
+  app.use(express.static(&#39;static&#39;));
+  app.get(&#39;/&#39;, homepageHandler);
+  app.get(&#39;/ping&#39;, pingHandler);
+  app.use(errorHandler(log));
+
+  return expressify(app)(params);
+}</code></pre>
+</dd>
 <dt><a href="#module_logger">logger</a></dt>
 <dd><p>Wrap function that returns an OpenWhisk function that is enabled with logging.</p>
 <p><strong>Usage:</strong></p>
@@ -24,6 +41,28 @@ async main(params) {
 
 module.exports.main = wrap(main)
   .with(logger);</code></pre>
+</dd>
+<dt><a href="#module_middleware">middleware</a></dt>
+<dd><p>Helper functions for expressified actions.</p>
+<p><strong>Usage:</strong></p>
+<pre><code class="language-js">const {
+  expressify, logRequest, errorHandler, asyncHandler, cacheControl,
+} = require(&#39;@adobe/openwhisk-action-utils&#39;);
+
+async function startHandler(params, req, res) {
+   res.send(&#39;Hello, world.&#39;);
+}
+async function main(params) {
+  const { __ow_logger: log } = params;
+  const app = express();
+  app.use(logRequest(log));
+  app.use(cacheControl());
+  app.get(&#39;/&#39;, asyncHandler(startHandler, params));
+  app.get(&#39;/ping&#39;, asyncHandler(pingHandler, params));
+  app.use(errorHandler(log));
+
+  return expressify(app)(params);
+}</code></pre>
 </dd>
 <dt><a href="#module_wrap">wrap</a></dt>
 <dd><p>Helper function to easily chain OpenWhisk actions.</p>
@@ -40,6 +79,42 @@ module.exports.main = wrap(main)
   .with(logger);</code></pre>
 </dd>
 </dl>
+
+<a name="module_expressify"></a>
+
+## expressify
+Helper to turn a OpenWhisk web action into a express request which can be handled with normal
+express handlers.
+
+**Usage:**
+
+```js
+const { expressify, errorHandler } = require('@adobe/openwhisk-action-utils');
+
+async function main(params) {
+  const app = express();
+  app.use(cookieParser());
+  app.use(express.static('static'));
+  app.get('/', homepageHandler);
+  app.get('/ping', pingHandler);
+  app.use(errorHandler(log));
+
+  return expressify(app)(params);
+}
+```
+
+<a name="module_expressify..expressify"></a>
+
+### expressify~expressify(app) ⇒ [<code>ActionFunction</code>](#module_wrap..ActionFunction)
+Creates an OpenWhisk action function that uses the express framework to handle the invocation.
+
+**Kind**: inner method of [<code>expressify</code>](#module_expressify)  
+**Returns**: [<code>ActionFunction</code>](#module_wrap..ActionFunction) - An action function.  
+**See**: https://expressjs.com/en/4x/api.html#app  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| app | <code>ExpressApp</code> | The express application |
 
 <a name="module_logger"></a>
 
@@ -63,7 +138,7 @@ module.exports.main = wrap(main)
 * [logger](#module_logger)
     * [~init(params, [logger])](#module_logger..init) ⇒
     * [~wrap(fn, params, [logger])](#module_logger..wrap) ⇒ <code>\*</code>
-    * [~logger(fn, [logger])](#module_logger..logger) ⇒ <code>ActionFunction</code>
+    * [~logger(fn, [logger])](#module_logger..logger) ⇒ [<code>ActionFunction</code>](#module_wrap..ActionFunction)
 
 <a name="module_logger..init"></a>
 
@@ -91,21 +166,21 @@ it also creates a bunyan logger and binds it to the `__ow_logger` params.
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| fn | <code>ActionFunction</code> |  | original OpenWhisk action main function |
+| fn | [<code>ActionFunction</code>](#module_wrap..ActionFunction) |  | original OpenWhisk action main function |
 | params | <code>\*</code> |  | OpenWhisk action params |
 | [logger] | <code>MultiLogger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix                                            `rootLogger`. |
 
 <a name="module_logger..logger"></a>
 
-### logger~logger(fn, [logger]) ⇒ <code>ActionFunction</code>
+### logger~logger(fn, [logger]) ⇒ [<code>ActionFunction</code>](#module_wrap..ActionFunction)
 Wrap function that returns an OpenWhisk function that is enabled with logging.
 
 **Kind**: inner method of [<code>logger</code>](#module_logger)  
-**Returns**: <code>ActionFunction</code> - a new function with the same signature as your original main function  
+**Returns**: [<code>ActionFunction</code>](#module_wrap..ActionFunction) - a new function with the same signature as your original main function  
 
 | Param | Type | Default | Description |
 | --- | --- | --- | --- |
-| fn | <code>ActionFunction</code> |  | original OpenWhisk action main function |
+| fn | [<code>ActionFunction</code>](#module_wrap..ActionFunction) |  | original OpenWhisk action main function |
 | [logger] | <code>MultiLogger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix                                            `rootLogger`. |
 
 **Example**  
@@ -120,6 +195,127 @@ async main(params) {
 module.exports.main = wrap(main)
   .with(logger);
 ```
+<a name="module_middleware"></a>
+
+## middleware
+Helper functions for expressified actions.
+
+**Usage:**
+
+```js
+const {
+  expressify, logRequest, errorHandler, asyncHandler, cacheControl,
+} = require('@adobe/openwhisk-action-utils');
+
+async function startHandler(params, req, res) {
+   res.send('Hello, world.');
+}
+async function main(params) {
+  const { __ow_logger: log } = params;
+  const app = express();
+  app.use(logRequest(log));
+  app.use(cacheControl());
+  app.get('/', asyncHandler(startHandler, params));
+  app.get('/ping', asyncHandler(pingHandler, params));
+  app.use(errorHandler(log));
+
+  return expressify(app)(params);
+}
+```
+
+
+* [middleware](#module_middleware)
+    * [~errorHandler(log)](#module_middleware..errorHandler) ⇒ <code>ExpressMiddleware</code>
+    * [~cacheControl([value])](#module_middleware..cacheControl) ⇒ <code>ExpressMiddleware</code>
+    * [~logRequest(logger)](#module_middleware..logRequest) ⇒ <code>ExpressMiddleware</code>
+    * [~asyncHandler(fn, params)](#module_middleware..asyncHandler) ⇒ <code>ExpressMiddleware</code>
+    * [~ActionMiddlewareFunction](#module_middleware..ActionMiddlewareFunction) : <code>function</code>
+
+<a name="module_middleware..errorHandler"></a>
+
+### middleware~errorHandler(log) ⇒ <code>ExpressMiddleware</code>
+Error handler. Reports errors that happen during the request processing and responds
+with a `500` if not already set.
+
+**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
+**Returns**: <code>ExpressMiddleware</code> - an express middleware function.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| log | <code>BunyanLogger</code> | The logger to use for reporting errors. |
+
+**Example**  
+
+```js
+// install last
+app.use(errorHandler(log));
+```
+<a name="module_middleware..cacheControl"></a>
+
+### middleware~cacheControl([value]) ⇒ <code>ExpressMiddleware</code>
+Ensures cache control. Sets cache control headers.
+
+**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
+**Returns**: <code>ExpressMiddleware</code> - an express middleware function.  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [value] | <code>string</code> | <code>&quot;no-store, private, must-revalidate&quot;</code> | Cache control header value. |
+
+**Example**  
+
+```
+app.use(cacheControl());
+```
+<a name="module_middleware..logRequest"></a>
+
+### middleware~logRequest(logger) ⇒ <code>ExpressMiddleware</code>
+Creates a bunyan child logger for the request and adds it to the request. This ensures that
+important header values, like `x-request-id` are included in every log entry. It also
+logs the request and response lines.
+
+**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
+**Returns**: <code>ExpressMiddleware</code> - an express middleware function.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| logger | <code>BunyanLogger</code> | the bunyan logger |
+
+**Example**  
+
+```js
+// install first
+app.use(logRequest(log));
+```
+<a name="module_middleware..asyncHandler"></a>
+
+### middleware~asyncHandler(fn, params) ⇒ <code>ExpressMiddleware</code>
+Wraps the route middleware so it can bind the params and catch potential promise rejections
+during the async invocation.
+
+**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
+**Returns**: <code>ExpressMiddleware</code> - an express middleware function.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| fn | [<code>ActionMiddlewareFunction</code>](#module_middleware..ActionMiddlewareFunction) | an extended express middleware function |
+| params | <code>\*</code> | Action params to be pass to the handler. |
+
+<a name="module_middleware..ActionMiddlewareFunction"></a>
+
+### middleware~ActionMiddlewareFunction : <code>function</code>
+Extended middleware function to be use with the [asyncHandler](#module_middleware..asyncHandler).
+
+**Kind**: inner typedef of [<code>middleware</code>](#module_middleware)  
+**See**: https://expressjs.com/en/4x/api.html#middleware-callback-function-examples  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>\*</code> | The action params |
+| req | <code>ExpressRequest</code> | The express request |
+| res | <code>ExpressResponse</code> | The express response |
+| next | <code>ExpressMiddleware</code> | The next handler in chain. |
+
 <a name="module_wrap"></a>
 
 ## wrap
