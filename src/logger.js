@@ -12,9 +12,22 @@
 /* eslint-disable no-underscore-dangle,no-console,no-else-return */
 
 /**
+ * Wrap function that returns an OpenWhisk function that is enabled with logging.
+ *
+ * **Usage:**
+ *
+ * ```js
+ * const { logger, wrap } = require('@adobe/openwhisk-action-utils'};
+ *
+ * async main(params) {
+ *   //…my action code…
+ * }
+ *
+ * module.exports.main = wrap(main)
+ *   .with(logger);
+ * ```
+ *
  * @module logger
- * @private
- * @todo: ensure good jsdoc
  */
 
 const path = require('path');
@@ -72,6 +85,7 @@ JsonifyForLog.impl(http.ServerResponse, (res) => {
 /**
  * Special logger for openwhisk actions that adds the activation id, action name and
  * transaction id to each log message.
+ * @private
  */
 class OpenWhiskLogger extends MultiLogger {
   constructor(logger, opts) {
@@ -91,6 +105,7 @@ class OpenWhiskLogger extends MultiLogger {
 
 /**
  * Bunyan serializers
+ * @private
  */
 const serializers = {
   res: (res) => {
@@ -112,6 +127,7 @@ const serializers = {
  * It ensures that, the given logger has a default console logger configured. It also looks for
  * credential params and tries to add additional external logger (eg. coralogix, papertrail).
  *
+ * @private
  * @param {*} params                        - the openwhisk action params
  * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
@@ -146,6 +162,7 @@ function setupHelixLogger(params, logger = rootLogger) {
  * stream to the given helix logger. It will add a new bunyan-logger to `params.__ow_logger`
  * if not already present.
  *
+ * @private
  * @param {*} params                   - the openwhisk action params
  * @param {Logger} [logger=rootLogger] - a helix multi logger. defaults to the helix `rootLogger`.
  * @return {BunyanLogger} A bunyan logger
@@ -184,6 +201,7 @@ function setupBunyanLogger(params, logger = rootLogger) {
  * @param {*} params - openwhisk action params.
  * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
+ * @return BunyanLogger A bunyan logger.
  */
 function init(params, logger = rootLogger) {
   setupHelixLogger(params, logger);
@@ -192,11 +210,12 @@ function init(params, logger = rootLogger) {
 }
 
 /**
- * Wraps a main openwhisk function and intitializes logging.
+ * Takes a main OpenWhisk function and intitializes logging, by invoking {@link init}.
+ * It logs invocation details on `trace` level before and after the actual action invocation.
  * it also creates a bunyan logger and binds it to the `__ow_logger` params.
  *
- * @param {Function} fn - original openwhisk action main function
- * @param {*} params - openwhisk action params
+ * @param {ActionFunction} fn - original OpenWhisk action main function
+ * @param {*} params - OpenWhisk action params
  * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
  * @returns {*} the return value of the action
@@ -237,7 +256,33 @@ async function wrap(fn, params = {}, logger = rootLogger) {
   }
 }
 
-module.exports = {
+/**
+ * Wrap function that returns an OpenWhisk function that is enabled with logging.
+ *
+ * @example <caption></caption>
+ *
+ * ```js
+ * const { logger, wrap } = require('@adobe/openwhisk-action-utils'};
+ *
+ * async main(params) {
+ *   //…my action code…
+ * }
+ *
+ * module.exports.main = wrap(main)
+ *   .with(logger);
+ * ```
+ *
+ * @function logger
+ * @param {ActionFunction} fn - original OpenWhisk action main function
+ * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
+ *                                            `rootLogger`.
+ * @returns {ActionFunction} a new function with the same signature as your original main function
+ */
+function wrapper(fn, logger = rootLogger) {
+  return (params) => wrap(fn, params, logger);
+}
+
+module.exports = Object.assign(wrapper, {
   wrap,
   init,
-};
+});
