@@ -1,3 +1,10 @@
+## [2.7.2](https://github.com/adobe/openwhisk-action-utils/compare/v2.7.1...v2.7.2) (2019-11-14)
+
+
+### Bug Fixes
+
+* **logger:** be robust if __ow_logger is not a bunyan logger ([#40](https://github.com/adobe/openwhisk-action-utils/issues/40)) ([fda5b28](https://github.com/adobe/openwhisk-action-utils/commit/fda5b282ff0b47f17b77cde57def1f06b8f346d1)), closes [#39](https://github.com/adobe/openwhisk-action-utils/issues/39)
+
 ## [2.7.1](https://github.com/adobe/openwhisk-action-utils/compare/v2.7.0...v2.7.1) (2019-11-14)
 
 
