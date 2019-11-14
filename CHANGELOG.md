@@ -1,3 +1,10 @@
+# [2.7.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.6.0...v2.7.0) (2019-11-14)
+
+
+### Features
+
+* **docs:** Add `index.d.ts` with interfaces for exported classes and arguments ([#37](https://github.com/adobe/openwhisk-action-utils/issues/37)) ([c4f21a8](https://github.com/adobe/openwhisk-action-utils/commit/c4f21a85ccaa2e1ce5845ccc0b6c127039a375e7)), closes [#30](https://github.com/adobe/openwhisk-action-utils/issues/30)
+
 # [2.6.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.5.0...v2.6.0) (2019-11-14)
 
 
