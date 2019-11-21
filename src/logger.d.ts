@@ -20,6 +20,22 @@ import { MultiLogger } from '@adobe/helix-log';
 declare interface BunyanLogger {}
 
 /**
+ * Options for the wrap functions
+ */
+declare interface WrapOptions {
+
+  /**
+   * Helix multi logger. defaults to the helix `rootLogger`.
+   */
+  logger?: MultiLogger,
+
+  /**
+   * Additional fields to log with the `ow` logging fields.
+   */
+  fields?: object,
+}
+
+/**
  * Wrap function that returns an OpenWhisk function that is enabled with logging.
  *
  * @example <caption></caption>
@@ -37,11 +53,10 @@ declare interface BunyanLogger {}
  *
  * @function logger
  * @param {ActionFunction} fn - original OpenWhisk action main function
- * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
- *                                            `rootLogger`.
+ * @param {WrapOptions} [opts] - optional options.
  * @returns {ActionFunction} a new function with the same signature as your original main function
  */
-export declare function logger(fn: ActionFunction, logger: MultiLogger): ActionFunction;
+export declare function logger(fn: ActionFunction, opts: WrapOptions): ActionFunction;
 
 export declare namespace logger {
   /**
@@ -57,14 +72,21 @@ export declare namespace logger {
 
   /**
    * Takes a main OpenWhisk function and intitializes logging, by invoking {@link init}.
-   * It logs invocation details on `trace` level before and after the actual action invocation.
    * it also creates a bunyan logger and binds it to the `__ow_logger` params.
    *
    * @param {ActionFunction} fn - original OpenWhisk action main function
    * @param {*} params - OpenWhisk action params
-   * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
-   *                                            `rootLogger`.
+   * @param {WrapOptions} [opts] - optional options.
    * @returns {*} the return value of the action
    */
-  export function wrap(fn: ActionFunction, params: object, logger: MultiLogger): object;
+  export function wrap(fn: ActionFunction, params: object, opts: WrapOptions): object;
+
+  /**
+   * Creates a tracer function that logs invocation details on `trace` level before and after the
+   * actual action invocation.
+   *
+   * @param {ActionFunction} fn - original OpenWhisk action main function
+   * @returns {ActionFunction} an action function instrumented with tracing.
+   */
+  export function trace(fn: ActionFunction): ActionFunction;
 }

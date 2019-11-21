@@ -39,8 +39,15 @@ const {
   BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger,
   JsonifyForLog, MultiLogger,
 } = require('@adobe/helix-log');
+const { createNamespace } = require('cls-hooked');
+
 const createPapertrailLogger = require('./logger-papertrail');
 const createCoralogixLogger = require('./logger-coralogix');
+
+const CLS_NAMESPACE_NAME = 'ow-util-logger';
+const LOGGER_OW_FIELDS_NAME = 'ow-fields';
+
+const CLS_NAMESPACE = createNamespace(CLS_NAMESPACE_NAME);
 
 let _config = null;
 function config() {
@@ -91,14 +98,16 @@ class OpenWhiskLogger extends MultiLogger {
   constructor(logger, opts) {
     super(logger, {
       ...opts,
-      filter: (fields) => ({
-        ow: {
-          activationId: process.env.__OW_ACTIVATION_ID || 'n/a',
-          actionName: process.env.__OW_ACTION_NAME || 'n/a',
-          transactionId: process.env.__OW_TRANSACTION_ID || 'n/a',
-        },
-        ...fields,
-      }),
+      filter: (fields) => {
+        const ow = CLS_NAMESPACE.get(LOGGER_OW_FIELDS_NAME);
+        if (ow) {
+          return {
+            ow,
+            ...fields,
+          };
+        }
+        return fields;
+      },
     });
   }
 }
@@ -216,49 +225,73 @@ function init(params, logger = rootLogger) {
 
 /**
  * Takes a main OpenWhisk function and intitializes logging, by invoking {@link init}.
- * It logs invocation details on `trace` level before and after the actual action invocation.
- * it also creates a bunyan logger and binds it to the `__ow_logger` params.
+ * It also creates a bunyan logger and binds it to the `__ow_logger` params.
  *
  * @param {module:wrap~ActionFunction} fn - original OpenWhisk action main function
  * @param {*} params - OpenWhisk action params
- * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
+ * @param {object} [opts] - Additional wrapping options
+ * @param {object} [opts.fields] - Additional fields to log with the `ow` logging fields.
+ * @param {MultiLogger} [opts.logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
  * @returns {*} the return value of the action
  */
-async function wrap(fn, params = {}, logger = rootLogger) {
-  try {
-    const disclosedParams = { ...params };
-    Object.keys(disclosedParams)
-      .forEach((key) => {
-        if (key.match(/^[A-Z0-9_]+$/)) {
-          delete disclosedParams[key];
-        }
-      });
-    const log = init(params, logger);
+async function wrap(fn, params = {}, { logger = rootLogger, fields = {} } = {}) {
+  return CLS_NAMESPACE.runAndReturn(() => {
+    CLS_NAMESPACE.set(LOGGER_OW_FIELDS_NAME, {
+      activationId: process.env.__OW_ACTIVATION_ID || 'n/a',
+      actionName: process.env.__OW_ACTION_NAME || 'n/a',
+      transactionId: process.env.__OW_TRANSACTION_ID || 'n/a',
+      ...fields,
+    });
+    init(params, logger);
+    return fn(params);
+  });
+}
+
+/**
+ * Creates a tracer function that logs invocation details on `trace` level before and after the
+ * actual action invocation.
+ *
+ * @param {module:wrap~ActionFunction} fn - original OpenWhisk action main function
+ * @returns {module:wrap~ActionFunction} an action function instrumented with tracing.
+ */
+function trace(fn) {
+  return async (params) => {
     try {
-      log.trace({
-        params: disclosedParams,
-      }, 'before');
-      const result = await fn(params);
-      log.trace({
-        result,
-      }, 'result');
-      return result;
+      const disclosedParams = { ...params };
+      Object.keys(disclosedParams)
+        .forEach((key) => {
+          if (key.match(/^[A-Z0-9_]+$/)) {
+            delete disclosedParams[key];
+          }
+        });
+      delete disclosedParams.__ow_logger;
+      const { __ow_logger: log } = params;
+      try {
+        log.trace({
+          params: disclosedParams,
+        }, 'before');
+        const result = await fn(params);
+        log.trace({
+          result,
+        }, 'result');
+        return result;
+      } catch (e) {
+        log.error({
+          params: disclosedParams,
+          error: e,
+        }, 'error');
+        return {
+          statusCode: e.statusCode || 500,
+        };
+      }
     } catch (e) {
-      log.error({
-        params: disclosedParams,
-        error: e,
-      }, 'error');
+      console.error(e);
       return {
         statusCode: e.statusCode || 500,
       };
     }
-  } catch (e) {
-    console.error(e);
-    return {
-      statusCode: e.statusCode || 500,
-    };
-  }
+  };
 }
 
 /**
@@ -274,21 +307,25 @@ async function wrap(fn, params = {}, logger = rootLogger) {
  * }
  *
  * module.exports.main = wrap(main)
+ *   .with(logger.trace)
  *   .with(logger);
  * ```
  *
  * @function logger
  * @param {module:wrap~ActionFunction} fn - original OpenWhisk action main function
- * @param {MultiLogger} [logger=rootLogger] - a helix multi logger. defaults to the helix
+ * @param {object} [opts] - Additional wrapping options
+ * @param {object} [opts.fields] - Additional fields to log with the `ow` logging fields.
+ * @param {MultiLogger} [opts.logger=rootLogger] - a helix multi logger. defaults to the helix
  *                                            `rootLogger`.
  * @returns {module:wrap~ActionFunction} a new function with the same signature as your original
  *                                       main function
  */
-function wrapper(fn, logger = rootLogger) {
-  return (params) => wrap(fn, params, logger);
+function wrapper(fn, opts) {
+  return (params) => wrap(fn, params, opts);
 }
 
 module.exports = Object.assign(wrapper, {
   wrap,
   init,
+  trace,
 });

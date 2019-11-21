@@ -72,12 +72,16 @@ describe('Loggers', () => {
   it('openhwisk logging adds ow fields with defaults', () => {
     logger.init({}, myRootLogger);
     myRootLogger.loggers.get('OpenWhiskLogger').loggers.set('mylogger', memLogger);
-    const log = new SimpleInterface({ logger: myRootLogger });
 
     delete process.env.__OW_ACTIVATION_ID;
     delete process.env.__OW_ACTION_NAME;
     delete process.env.__OW_TRANSACTION_ID;
-    log.info('Hello, world');
+
+    logger.wrap(() => {
+      const log = new SimpleInterface({ logger: myRootLogger });
+      log.info('Hello, world');
+    });
+
     assert.deepEqual(memLogger.buf, [{
       level: 'info',
       message: ['Hello, world'],
@@ -93,9 +97,12 @@ describe('Loggers', () => {
   it('openhwisk logging adds ow fields', () => {
     logger.init({}, myRootLogger);
     myRootLogger.loggers.get('OpenWhiskLogger').loggers.set('mylogger', memLogger);
-    const log = new SimpleInterface({ logger: myRootLogger });
 
-    log.info('Hello, world');
+    logger.wrap(() => {
+      const log = new SimpleInterface({ logger: myRootLogger });
+      log.info('Hello, world');
+    });
+
     assert.deepEqual(memLogger.buf, [{
       level: 'info',
       message: ['Hello, world'],
@@ -112,8 +119,11 @@ describe('Loggers', () => {
     const log = logger.init({}, myRootLogger);
     myRootLogger.loggers.get('OpenWhiskLogger').loggers.set('mylogger', memLogger);
 
-    const child = log.child({ myId: 42 });
-    child.info('Hello, world');
+    logger.wrap(() => {
+      const child = log.child({ myId: 42 });
+      child.info('Hello, world');
+    });
+
     assert.deepEqual(memLogger.buf, [{
       level: 'info',
       message: ['Hello, world'],
@@ -127,7 +137,7 @@ describe('Loggers', () => {
     }]);
   });
 
-  it('wrap inits logging and traces params but no secrets', async () => {
+  it('wrap and trace inits logging and traces params but no secrets', async () => {
     async function main(params) {
       const { __ow_logger: log } = params;
       log.info('Hello, world.');
@@ -136,7 +146,7 @@ describe('Loggers', () => {
       };
     }
     myRootLogger.loggers.set('mylogger', memLogger);
-    const result = await logger.wrap(main, { path: '/foo', SECRET_KEY: 'foobar' }, myRootLogger);
+    const result = await logger.wrap(logger.trace(main), { path: '/foo', SECRET_KEY: 'foobar' }, { logger: myRootLogger });
 
     assert.deepEqual(result, { body: 'ok' });
 
@@ -169,8 +179,10 @@ describe('Loggers', () => {
         body: 'ok',
       };
     }
-    myRootLogger.loggers.set('mylogger', memLogger);
-    const action = wrap(main).with(logger, myRootLogger);
+    logger.init({}, myRootLogger);
+    myRootLogger.loggers.get('OpenWhiskLogger').loggers.set('mylogger', memLogger);
+
+    const action = wrap(main).with(logger.trace).with(logger, { fields: { foo: 'bar' }, logger: myRootLogger });
     const result = await action({ path: '/foo', SECRET_KEY: 'foobar' });
 
     assert.deepEqual(result, { body: 'ok' });
@@ -181,16 +193,34 @@ describe('Loggers', () => {
       params: {
         path: '/foo',
       },
+      ow: {
+        actionName: 'test-my-action-name',
+        activationId: 'test-my-activation-id',
+        transactionId: 'test-transaction-id',
+        foo: 'bar',
+      },
       timestamp: '1970-01-01T00:00:00.000Z',
     }, {
       level: 'info',
       message: ['Hello, world.'],
       timestamp: '1970-01-01T00:00:00.000Z',
+      ow: {
+        actionName: 'test-my-action-name',
+        activationId: 'test-my-activation-id',
+        transactionId: 'test-transaction-id',
+        foo: 'bar',
+      },
     }, {
       level: 'trace',
       message: ['result'],
       result: {
         body: 'ok',
+      },
+      ow: {
+        actionName: 'test-my-action-name',
+        activationId: 'test-my-activation-id',
+        transactionId: 'test-transaction-id',
+        foo: 'bar',
       },
       timestamp: '1970-01-01T00:00:00.000Z',
     }]);
@@ -212,7 +242,11 @@ describe('Loggers', () => {
         return [200, 'ok'];
       });
 
-    log.info({ myId: 42 }, 'Hello, world');
+    logger.wrap(() => {
+      const child = log.child({ myId: 42 });
+      child.info('Hello, world');
+    });
+
     assert.equal(reqs.length, 1);
     assert.equal(reqs[0].applicationName, 'logger-test');
     assert.equal(reqs[0].subsystemName, 'test-1');
@@ -263,7 +297,10 @@ describe('Loggers', () => {
       PAPERTRAIL_LOG_LEVEL: 'info',
     }, myRootLogger);
 
-    log.info({ myId: 42 }, 'Hello, world');
+    logger.wrap(() => {
+      const child = log.child({ myId: 42 });
+      child.info('Hello, world');
+    });
 
     await srv;
 
