@@ -9,20 +9,23 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+/**
+ * Logger from Bunyan
+ * @see https://github.com/trentm/node-bunyan
+ */
+declare interface BunyanLogger {}
 
-const {
-  errorHandler, cacheControl, logRequest, asyncHandler,
-} = require('./middleware.js');
-const expressify = require('./expressify.js');
-const { wrap } = require('./wrap');
-const createBunyanLogger = require('./createBunyanLogger.js');
+/**
+ * Helix Logger
+ * @see https://github.com/adobe/helix-log
+ */
+declare interface HelixLogger {}
 
-module.exports = {
-  logRequest,
-  errorHandler,
-  cacheControl,
-  asyncHandler,
-  expressify,
-  wrap,
-  createBunyanLogger,
-};
+/**
+ * Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+ * stream to the given helix logger.
+ *
+ * @param {HelixLogger} [logger=rootLogger] - a helix logger. defaults to the helix `rootLogger`.
+ * @return {BunyanLogger} A bunyan logger
+ */
+export declare function createBunyanLogger(logger: HelixLogger): BunyanLogger;

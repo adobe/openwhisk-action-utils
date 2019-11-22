@@ -10,6 +10,8 @@
  * governing permissions and limitations under the License.
  */
 const crypto = require('crypto');
+const bunyan = require('bunyan');
+const { BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger } = require('@adobe/helix-log');
 
 /**
  * Helper functions for expressified actions.
@@ -18,7 +20,7 @@ const crypto = require('crypto');
  *
  * ```js
  * const {
- *   expressify, logRequest, errorHandler, asyncHandler, cacheControl,
+ *   expressify, logRequest, errorHandler, asyncHandler, cacheControl, createBunyanLogger,
  * } = require('@adobe/openwhisk-action-utils');
  *
  * async function startHandler(params, req, res) {
@@ -26,7 +28,7 @@ const crypto = require('crypto');
  * }
 
  * async function main(params) {
- *   const { __ow_logger: log } = params;
+ *   const log = createBunyanLogger();
  *   const app = express();
  *   app.use(logRequest(log));
  *   app.use(cacheControl());
@@ -162,9 +164,52 @@ function asyncHandler(fn, params) {
   return (req, res, next) => (Promise.resolve(fn(params, req, res, next)).catch(next));
 }
 
+/**
+* Bunyan serializers
+* @private
+*/
+const serializers = {
+  res: (res) => {
+    if (!res || !res.statusCode) {
+      return res;
+    }
+    return {
+      statusCode: res.statusCode,
+      duration: res.duration,
+      headers: res.getHeaders(),
+    };
+  },
+  req: bunyan.stdSerializers.req,
+  err: bunyan.stdSerializers.err,
+};
+
+/**
+ * Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+ * stream to the given helix logger.
+ *
+ * @param {Logger} [logger=rootLogger] - a helix multi logger. defaults to the helix `rootLogger`.
+ * @return {BunyanLogger} A bunyan logger
+ */
+function createBunyanLogger(logger = rootLogger) {
+  return bunyan.createLogger({
+    name: 'action',
+    serializers,
+    streams: [{
+      name: 'BunyanStreamInterface',
+      level: 'trace',
+      type: 'raw',
+      stream: new BunyanStreamInterface({
+        logger,
+        filter: eraseBunyanDefaultFields,
+      }),
+    }],
+  });
+}
+
 module.exports = {
   errorHandler,
   cacheControl,
   logRequest,
   asyncHandler,
+  createBunyanLogger,
 };

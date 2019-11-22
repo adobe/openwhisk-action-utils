@@ -30,30 +30,18 @@ async function main(params) {
   return expressify(app)(params);
 }</code></pre>
 </dd>
-<dt><a href="#module_logger">logger</a></dt>
-<dd><p>Wrap function that returns an OpenWhisk function that is enabled with logging.</p>
-<p><strong>Usage:</strong></p>
-<pre><code class="language-js">const { logger, wrap } = require(&#39;@adobe/openwhisk-action-utils&#39;};
-
-async main(params) {
-  //…my action code…
-}
-
-module.exports.main = wrap(main)
-  .with(logger);</code></pre>
-</dd>
 <dt><a href="#module_middleware">middleware</a></dt>
 <dd><p>Helper functions for expressified actions.</p>
 <p><strong>Usage:</strong></p>
 <pre><code class="language-js">const {
-  expressify, logRequest, errorHandler, asyncHandler, cacheControl,
+  expressify, logRequest, errorHandler, asyncHandler, cacheControl, createBunyanLogger,
 } = require(&#39;@adobe/openwhisk-action-utils&#39;);
 
 async function startHandler(params, req, res) {
    res.send(&#39;Hello, world.&#39;);
 }
 async function main(params) {
-  const { __ow_logger: log } = params;
+  const log = createBunyanLogger();
   const app = express();
   app.use(logRequest(log));
   app.use(cacheControl());
@@ -77,6 +65,15 @@ module.exports.main = wrap(main)
   .with(epsagon)
   .with(status)
   .with(logger);</code></pre>
+</dd>
+</dl>
+
+## Functions
+
+<dl>
+<dt><a href="#createBunyanLogger">createBunyanLogger([logger])</a> ⇒ <code>BunyanLogger</code></dt>
+<dd><p>Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+stream to the given helix logger.</p>
 </dd>
 </dl>
 
@@ -116,85 +113,6 @@ Creates an OpenWhisk action function that uses the express framework to handle t
 | --- | --- | --- |
 | app | <code>ExpressApp</code> | The express application |
 
-<a name="module_logger"></a>
-
-## logger
-Wrap function that returns an OpenWhisk function that is enabled with logging.
-
-**Usage:**
-
-```js
-const { logger, wrap } = require('@adobe/openwhisk-action-utils'};
-
-async main(params) {
-  //…my action code…
-}
-
-module.exports.main = wrap(main)
-  .with(logger);
-```
-
-
-* [logger](#module_logger)
-    * [~init(params, [logger])](#module_logger..init) ⇒
-    * [~wrap(fn, params, [logger])](#module_logger..wrap) ⇒ <code>\*</code>
-    * [~logger(fn, [logger])](#module_logger..logger) ⇒ [<code>ActionFunction</code>](#module_wrap..ActionFunction)
-
-<a name="module_logger..init"></a>
-
-### logger~init(params, [logger]) ⇒
-Initializes helix-log and sets up external loggers. It also creates a bunyan-logger
-if not already present on `params.__ow_logger`.
-
-**Kind**: inner method of [<code>logger</code>](#module_logger)  
-**Returns**: BunyanLogger A bunyan logger.  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| params | <code>\*</code> |  | openwhisk action params. |
-| [logger] | <code>MultiLogger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix                                            `rootLogger`. |
-
-<a name="module_logger..wrap"></a>
-
-### logger~wrap(fn, params, [logger]) ⇒ <code>\*</code>
-Takes a main OpenWhisk function and intitializes logging, by invoking [init](init).
-It logs invocation details on `trace` level before and after the actual action invocation.
-it also creates a bunyan logger and binds it to the `__ow_logger` params.
-
-**Kind**: inner method of [<code>logger</code>](#module_logger)  
-**Returns**: <code>\*</code> - the return value of the action  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| fn | [<code>ActionFunction</code>](#module_wrap..ActionFunction) |  | original OpenWhisk action main function |
-| params | <code>\*</code> |  | OpenWhisk action params |
-| [logger] | <code>MultiLogger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix                                            `rootLogger`. |
-
-<a name="module_logger..logger"></a>
-
-### logger~logger(fn, [logger]) ⇒ [<code>ActionFunction</code>](#module_wrap..ActionFunction)
-Wrap function that returns an OpenWhisk function that is enabled with logging.
-
-**Kind**: inner method of [<code>logger</code>](#module_logger)  
-**Returns**: [<code>ActionFunction</code>](#module_wrap..ActionFunction) - a new function with the same signature as your original main function  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| fn | [<code>ActionFunction</code>](#module_wrap..ActionFunction) |  | original OpenWhisk action main function |
-| [logger] | <code>MultiLogger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix                                            `rootLogger`. |
-
-**Example**  
-
-```js
-const { logger, wrap } = require('@adobe/openwhisk-action-utils'};
-
-async main(params) {
-  //…my action code…
-}
-
-module.exports.main = wrap(main)
-  .with(logger);
-```
 <a name="module_middleware"></a>
 
 ## middleware
@@ -204,14 +122,14 @@ Helper functions for expressified actions.
 
 ```js
 const {
-  expressify, logRequest, errorHandler, asyncHandler, cacheControl,
+  expressify, logRequest, errorHandler, asyncHandler, cacheControl, createBunyanLogger,
 } = require('@adobe/openwhisk-action-utils');
 
 async function startHandler(params, req, res) {
    res.send('Hello, world.');
 }
 async function main(params) {
-  const { __ow_logger: log } = params;
+  const log = createBunyanLogger();
   const app = express();
   app.use(logRequest(log));
   app.use(cacheControl());
@@ -229,6 +147,7 @@ async function main(params) {
     * [~cacheControl([value])](#module_middleware..cacheControl) ⇒ <code>ExpressMiddleware</code>
     * [~logRequest(logger)](#module_middleware..logRequest) ⇒ <code>ExpressMiddleware</code>
     * [~asyncHandler(fn, params)](#module_middleware..asyncHandler) ⇒ <code>ExpressMiddleware</code>
+    * [~createBunyanLogger([logger])](#module_middleware..createBunyanLogger) ⇒ <code>BunyanLogger</code>
     * [~ActionMiddlewareFunction](#module_middleware..ActionMiddlewareFunction) : <code>function</code>
 
 <a name="module_middleware..errorHandler"></a>
@@ -300,6 +219,19 @@ during the async invocation.
 | --- | --- | --- |
 | fn | [<code>ActionMiddlewareFunction</code>](#module_middleware..ActionMiddlewareFunction) | an extended express middleware function |
 | params | <code>\*</code> | Action params to be pass to the handler. |
+
+<a name="module_middleware..createBunyanLogger"></a>
+
+### middleware~createBunyanLogger([logger]) ⇒ <code>BunyanLogger</code>
+Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+stream to the given helix logger.
+
+**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
+**Returns**: <code>BunyanLogger</code> - A bunyan logger  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [logger] | <code>Logger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix `rootLogger`. |
 
 <a name="module_middleware..ActionMiddlewareFunction"></a>
 
@@ -422,3 +354,16 @@ function tracer(fn, level) {
   }
 }
 ```
+<a name="createBunyanLogger"></a>
+
+## createBunyanLogger([logger]) ⇒ <code>BunyanLogger</code>
+Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
+stream to the given helix logger.
+
+**Kind**: global function  
+**Returns**: <code>BunyanLogger</code> - A bunyan logger  
+
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| [logger] | <code>Logger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix `rootLogger`. |
+
