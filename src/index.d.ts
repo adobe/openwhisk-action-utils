@@ -10,6 +10,6 @@
  * governing permissions and limitations under the License.
  */
 export * from './wrap';
-export * from './logger';
 export * from './expressify';
 export * from './middleware';
+export * from './createBunyanLogger';

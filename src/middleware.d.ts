@@ -10,7 +10,7 @@
  * governing permissions and limitations under the License.
  */
 
-import { BunyanLogger } from './logger';
+import { BunyanLogger } from "./createBunyanLogger";
 
 /**
  * Express request.
