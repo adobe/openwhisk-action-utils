@@ -1,3 +1,16 @@
+# [3.0.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.7.3...v3.0.0) (2019-11-25)
+
+
+### Features
+
+* **logger:** move logger to own repository ([#44](https://github.com/adobe/openwhisk-action-utils/issues/44)) ([b4d5a8e](https://github.com/adobe/openwhisk-action-utils/commit/b4d5a8e012352b66df4f1bd5e713e283c00e7b73)), closes [#42](https://github.com/adobe/openwhisk-action-utils/issues/42)
+
+
+### BREAKING CHANGES
+
+* **logger:** This module no longer exports the 'logger'. It was moved
+                 to 'openwhisk-action-logger'
+
 ## [2.7.3](https://github.com/adobe/openwhisk-action-utils/compare/v2.7.2...v2.7.3) (2019-11-22)
 
 
