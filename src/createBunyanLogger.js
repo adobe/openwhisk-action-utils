@@ -13,9 +13,9 @@ const bunyan = require('bunyan');
 const { BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger } = require('@adobe/helix-log');
 
 /**
-* Bunyan serializers
-* @private
-*/
+ * Bunyan serializers
+ * @private
+ */
 const serializers = {
   res: (res) => {
     if (!res || !res.statusCode) {
