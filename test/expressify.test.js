@@ -22,29 +22,35 @@ describe('Expressify', () => {
   it('handles simple get', async () => {
     const app = express();
     app.get('/ping', (req, res) => {
-      res.send('ok');
+      const dump = {
+        query: req.query,
+        test: req.owActionParams.__ow_path,
+      };
+      res.send(`${JSON.stringify(dump)}`);
     });
 
     const params = {
       __ow_path: '/ping',
       __ow_method: 'get',
       __ow_headers: {},
+      __ow_query: 'a=1&a=2',
+      foo: '42',
+      SUPER_SECRET: 'foo',
     };
 
     const result = await expressify(app)(params);
 
     assert.deepEqual(result, {
-      body: 'ok',
+      body: '{"query":{"foo":"42","a":["1","2"]},"test":"/ping"}',
       headers: {
-        'content-length': '2',
+        'content-length': '51',
         'content-type': 'text/html; charset=utf-8',
-        etag: 'W/"2-eoX0dku9ba8cNUXvu/DyeabcC+s"',
+        etag: 'W/"33-zMD3V1aagE/Fph2VK4mzE96IU9s"',
         'x-powered-by': 'Express',
       },
       statusCode: 200,
     });
   });
-
 
   // eslint-disable-next-line no-restricted-syntax
   for (const __ow_path of [null, undefined, '', 'missing']) {

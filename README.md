@@ -16,6 +16,8 @@
 <dt><a href="#module_expressify">expressify</a></dt>
 <dd><p>Helper to turn a OpenWhisk web action into a express request which can be handled with normal
 express handlers.</p>
+<p>Expressify maps the query and action params to <code>req.query</code>. The original action params are
+available under <code>req.owActionParams</code>.</p>
 <p><strong>Usage:</strong></p>
 <pre><code class="language-js">const { expressify, errorHandler } = require(&#39;@adobe/openwhisk-action-utils&#39;);
 
@@ -45,8 +47,8 @@ async function main(params) {
   const app = express();
   app.use(logRequest(log));
   app.use(cacheControl());
-  app.get(&#39;/&#39;, asyncHandler(startHandler, params));
-  app.get(&#39;/ping&#39;, asyncHandler(pingHandler, params));
+  app.get(&#39;/&#39;, asyncHandler(startHandler));
+  app.get(&#39;/ping&#39;, asyncHandler(pingHandler));
   app.use(errorHandler(log));
 
   return expressify(app)(params);
@@ -82,6 +84,9 @@ stream to the given helix logger.</p>
 ## expressify
 Helper to turn a OpenWhisk web action into a express request which can be handled with normal
 express handlers.
+
+Expressify maps the query and action params to `req.query`. The original action params are
+available under `req.owActionParams`.
 
 **Usage:**
 
@@ -133,8 +138,8 @@ async function main(params) {
   const app = express();
   app.use(logRequest(log));
   app.use(cacheControl());
-  app.get('/', asyncHandler(startHandler, params));
-  app.get('/ping', asyncHandler(pingHandler, params));
+  app.get('/', asyncHandler(startHandler));
+  app.get('/ping', asyncHandler(pingHandler));
   app.use(errorHandler(log));
 
   return expressify(app)(params);
@@ -146,8 +151,7 @@ async function main(params) {
     * [~errorHandler(log)](#module_middleware..errorHandler) ⇒ <code>ExpressMiddleware</code>
     * [~cacheControl([value])](#module_middleware..cacheControl) ⇒ <code>ExpressMiddleware</code>
     * [~logRequest(logger)](#module_middleware..logRequest) ⇒ <code>ExpressMiddleware</code>
-    * [~asyncHandler(fn, params)](#module_middleware..asyncHandler) ⇒ <code>ExpressMiddleware</code>
-    * [~createBunyanLogger([logger])](#module_middleware..createBunyanLogger) ⇒ <code>BunyanLogger</code>
+    * [~asyncHandler(fn)](#module_middleware..asyncHandler) ⇒ <code>ExpressMiddleware</code>
     * [~ActionMiddlewareFunction](#module_middleware..ActionMiddlewareFunction) : <code>function</code>
 
 <a name="module_middleware..errorHandler"></a>
@@ -208,8 +212,8 @@ app.use(logRequest(log));
 ```
 <a name="module_middleware..asyncHandler"></a>
 
-### middleware~asyncHandler(fn, params) ⇒ <code>ExpressMiddleware</code>
-Wraps the route middleware so it can bind the params and catch potential promise rejections
+### middleware~asyncHandler(fn) ⇒ <code>ExpressMiddleware</code>
+Wraps the route middleware so it can catch potential promise rejections
 during the async invocation.
 
 **Kind**: inner method of [<code>middleware</code>](#module_middleware)  
@@ -217,21 +221,7 @@ during the async invocation.
 
 | Param | Type | Description |
 | --- | --- | --- |
-| fn | [<code>ActionMiddlewareFunction</code>](#module_middleware..ActionMiddlewareFunction) | an extended express middleware function |
-| params | <code>\*</code> | Action params to be pass to the handler. |
-
-<a name="module_middleware..createBunyanLogger"></a>
-
-### middleware~createBunyanLogger([logger]) ⇒ <code>BunyanLogger</code>
-Sets up a bunyan logger suitable to use with an openwhisk action. The bunyan logger will
-stream to the given helix logger.
-
-**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
-**Returns**: <code>BunyanLogger</code> - A bunyan logger  
-
-| Param | Type | Default | Description |
-| --- | --- | --- | --- |
-| [logger] | <code>Logger</code> | <code>rootLogger</code> | a helix multi logger. defaults to the helix `rootLogger`. |
+| fn | <code>ExpressMiddleware</code> | an extended express middleware function |
 
 <a name="module_middleware..ActionMiddlewareFunction"></a>
 

@@ -31,19 +31,6 @@ declare interface ExpressResponse {}
 declare type ExpressMiddleware = (req: ExpressRequest, res: ExpressResponse, next: ExpressMiddleware) => void;
 
 /**
- * Extended middleware function to be use with the {@link asyncHandler}.
- *
- * @see https://expressjs.com/en/4x/api.html#middleware-callback-function-examples
- *
- * @callback ActionMiddlewareFunction
- * @param {*} params The action params
- * @param {ExpressRequest} req The express request
- * @param {ExpressResponse} res The express response
- * @param {ExpressMiddleware} next The next handler in chain.
- */
-export declare type ActionMiddlewareFunction = (params: object, req: ExpressRequest, res: ExpressResponse, next: ExpressMiddleware) => void;
-
-/**
  * Error handler. Reports errors that happen during the request processing and responds
  * with a `500` if not already set.
  *
@@ -91,11 +78,10 @@ export declare function cacheControl(value: string): ExpressMiddleware;
 export declare function logRequest(logger: BunyanLogger): ExpressMiddleware;
 
 /**
- * Wraps the route middleware so it can bind the params and catch potential promise rejections
- * during the async invocation.
+ * Wraps the route middleware so it can catch potential promise rejections during the async
+ * invocation.
  *
- * @param {ActionMiddlewareFunction} fn an extended express middleware function
- * @param {*} params Action params to be pass to the handler.
+ * @param {ExpressMiddleware} fn an extended express middleware function
  * @returns {ExpressMiddleware} an express middleware function.
  */
-export declare function asyncHandler(fn: ActionMiddlewareFunction, params: object): ExpressMiddleware;
+export declare function asyncHandler(fn: ExpressMiddleware): ExpressMiddleware;

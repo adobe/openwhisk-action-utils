@@ -262,15 +262,14 @@ describe('Middleware', () => {
 
   it('Async handler can pass in params', async () => {
     const app = express();
-    app.get('/', asyncHandler(async (params, req, res) => {
-      res.send(`result is ${params.result}`);
-    }, {
-      result: 42,
+    app.get('/', asyncHandler(async (req, res) => {
+      res.send(`result is ${req.query.result}`);
     }));
     const params = {
       __ow_path: '/',
       __ow_method: 'get',
       __ow_headers: {},
+      result: 42,
     };
     const result = await expressify(app)(params);
     assert.deepEqual(result, {
