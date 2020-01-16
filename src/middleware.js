@@ -30,8 +30,8 @@ const crypto = require('crypto');
  *   const app = express();
  *   app.use(logRequest(log));
  *   app.use(cacheControl());
- *   app.get('/', asyncHandler(startHandler, params));
- *   app.get('/ping', asyncHandler(pingHandler, params));
+ *   app.get('/', asyncHandler(startHandler));
+ *   app.get('/ping', asyncHandler(pingHandler));
  *   app.use(errorHandler(log));
  *
  *   return expressify(app)(params);
@@ -151,15 +151,14 @@ function logRequest(logger) {
 }
 
 /**
- * Wraps the route middleware so it can bind the params and catch potential promise rejections
+ * Wraps the route middleware so it can catch potential promise rejections
  * during the async invocation.
  *
- * @param {module:middleware~ActionMiddlewareFunction} fn an extended express middleware function
- * @param {*} params Action params to be pass to the handler.
+ * @param {ExpressMiddleware} fn an extended express middleware function
  * @returns {ExpressMiddleware} an express middleware function.
  */
-function asyncHandler(fn, params) {
-  return (req, res, next) => (Promise.resolve(fn(params, req, res, next)).catch(next));
+function asyncHandler(fn) {
+  return (req, res, next) => (Promise.resolve(fn(req, res, next)).catch(next));
 }
 
 module.exports = {

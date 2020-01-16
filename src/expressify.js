@@ -14,6 +14,9 @@
  * Helper to turn a OpenWhisk web action into a express request which can be handled with normal
  * express handlers.
  *
+ * Expressify maps the query and most of action params to `req.query`.
+ * The original action params are available under `req.owActionParams`.
+ *
  * **Usage:**
  *
  * ```js
@@ -33,6 +36,7 @@
  * @module expressify
  */
 
+const querystring = require('querystring');
 const serverless = require('serverless-http');
 
 /**
@@ -53,6 +57,12 @@ function expressify(app) {
         req.emit('data', data);
         req.emit('end');
       }
+      // also inject the action params to the request
+      Object.defineProperty(req, 'owActionParams', {
+        value: params,
+        enumerable: false,
+      });
+
       return app(req, res, next);
     };
 
@@ -67,12 +77,26 @@ function expressify(app) {
     // eslint-disable-next-line no-use-before-define
     const isBase64Encoded = BINARY_CONTENT_TYPES.find((pat) => pat.test(contentType));
 
+    // copy all params that do now start with __ow or are all upper case as query params
+    const query = {};
+    Object.entries(params).forEach(([key, value]) => {
+      if (key.startsWith('__ow') || key.match(/^[A-Z0-9_]+$/)) {
+        return;
+      }
+      query[key] = value;
+    });
+    // also check for a `__ow_query` in case of raw http actions
+    if (params.__ow_query) {
+      Object.assign(query, querystring.parse(params.__ow_query || ''));
+    }
+
     const event = {
       httpMethod: params.__ow_method.toUpperCase(),
       path: params.__ow_path || '/',
       body: params.__ow_body,
       headers: params.__ow_headers,
       isBase64Encoded,
+      queryStringParameters: query,
     };
     const result = await handler(event, {});
     delete result.isBase64Encoded;
