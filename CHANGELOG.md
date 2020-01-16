@@ -1,3 +1,19 @@
+# [4.0.0](https://github.com/adobe/openwhisk-action-utils/compare/v3.0.0...v4.0.0) (2020-01-16)
+
+
+### Features
+
+* **expressify:** improve expressify so that no params needs to be passed to the handlers ([#57](https://github.com/adobe/openwhisk-action-utils/issues/57)) ([9ec924f](https://github.com/adobe/openwhisk-action-utils/commit/9ec924fe023948d536595155a4d62614203efa95)), closes [#54](https://github.com/adobe/openwhisk-action-utils/issues/54)
+
+
+### BREAKING CHANGES
+
+* **expressify:** The async handler now takes a normal express middleware function and
+no longer passes the `params`. most of the params and the __ow_query are available
+via `req.query`. the original action params are available via `req.owActionParams`.
+Note that the ALL_UPPERCASE params are not stored in `req.query` as they most likely
+contain secrets and are passed via default action params.
+
 # [3.0.0](https://github.com/adobe/openwhisk-action-utils/compare/v2.7.3...v3.0.0) (2019-11-25)
 
 
