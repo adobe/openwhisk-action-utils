@@ -26,9 +26,9 @@
   "devDependencies": {
     "@semantic-release/changelog": "3.0.6",
     "@semantic-release/git": "8.0.0",
-    "@semantic-release/github": "6.0.1",
+    "@semantic-release/github": "6.0.2",
     "body-parser": "1.19.0",
-    "codecov": "3.6.1",
+    "codecov": "3.6.2",
     "eslint": "6.8.0",
     "eslint-config-airbnb-base": "14.0.0",
     "eslint-plugin-header": "3.0.0",
@@ -36,12 +36,12 @@
     "express": "4.17.1",
     "ghooks": "2.0.4",
     "jsdoc-to-markdown": "5.0.3",
-    "lint-staged": "10.0.0",
-    "mocha": "7.0.0",
+    "lint-staged": "10.0.2",
+    "mocha": "7.0.1",
     "mocha-junit-reporter": "1.23.3",
     "nock": "11.7.2",
     "nyc": "15.0.0",
-    "semantic-release": "16.0.2"
+    "semantic-release": "16.0.3"
   },
   "engines": {
     "node": ">= 8.3.0"
