@@ -1,3 +1,10 @@
+# [4.1.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.0.0...v4.1.0) (2020-01-29)
+
+
+### Features
+
+* **logger:** log request should use debug level by default ([d6f1605](https://github.com/adobe/openwhisk-action-utils/commit/d6f1605b43a82937c5e46273a81958a414dfd86e)), closes [#62](https://github.com/adobe/openwhisk-action-utils/issues/62)
+
 # [4.0.0](https://github.com/adobe/openwhisk-action-utils/compare/v3.0.0...v4.0.0) (2020-01-16)
 
 
