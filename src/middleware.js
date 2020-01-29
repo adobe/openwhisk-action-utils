@@ -115,9 +115,13 @@ function cacheControl(value = 'no-store, private, must-revalidate') {
  * ```
  *
  * @param {BunyanLogger} logger - the bunyan logger
+ * @param {string} [level=debug] - the log level to use for logging the request information.
  * @returns {ExpressMiddleware} an express middleware function.
  */
-function logRequest(logger) {
+function logRequest(logger, level = 'debug') {
+  if (typeof logger[level] !== 'function') {
+    throw Error(`invalid log level specified: ${level}`);
+  }
   return (req, res, next) => {
     // Use X-Request-ID from request if it is set, otherwise generate a uuid
     req.id = req.headers['x-request-id']
@@ -130,7 +134,7 @@ function logRequest(logger) {
     req.log.fields.name = 'http';
 
     // Request started
-    req.log.info({ req }, `${req.method} ${req.url}`);
+    req.log[level]({ req }, `${req.method} ${req.url}`);
 
     // Start the request timer
     const time = process.hrtime();
@@ -143,7 +147,7 @@ function logRequest(logger) {
       const message = `${req.method} ${req.url} ${res.statusCode} - ${res.duration} ms`;
 
       if (req.log) {
-        req.log.info({ res }, message);
+        req.log[level]({ res }, message);
       }
     });
     next();

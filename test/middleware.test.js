@@ -72,6 +72,44 @@ describe('Middleware', () => {
     assert.equal(ringbuffer.records[1].msg, 'hello, world');
   });
 
+  it('logRequest uses debug level by default', async () => {
+    const app = express();
+    app.use(logRequest(log));
+    app.get('/', (req, res) => {
+      res.send('ok');
+    });
+    const params = {
+      __ow_path: '/',
+      __ow_method: 'get',
+      __ow_headers: {},
+    };
+    await expressify(app)(params);
+    assert.equal(ringbuffer.records[0].msg, 'GET /');
+    assert.equal(ringbuffer.records[0].level, 20);
+  });
+
+  it('logRequest takes log level argument', async () => {
+    const app = express();
+    app.use(logRequest(log, 'info'));
+    app.get('/', (req, res) => {
+      res.send('ok');
+    });
+    const params = {
+      __ow_path: '/',
+      __ow_method: 'get',
+      __ow_headers: {},
+    };
+    await expressify(app)(params);
+    assert.equal(ringbuffer.records[0].msg, 'GET /');
+    assert.equal(ringbuffer.records[0].level, 30);
+  });
+
+  it('logRequest rejects illegal log level', async () => {
+    assert.throws(() => {
+      logRequest(log, 'foobar');
+    });
+  });
+
   it('logRequest does not crash if logger vanishes', async () => {
     const app = express();
     app.use(logRequest(log));

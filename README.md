@@ -16,8 +16,8 @@
 <dt><a href="#module_expressify">expressify</a></dt>
 <dd><p>Helper to turn a OpenWhisk web action into a express request which can be handled with normal
 express handlers.</p>
-<p>Expressify maps the query and action params to <code>req.query</code>. The original action params are
-available under <code>req.owActionParams</code>.</p>
+<p>Expressify maps the query and most of action params to <code>req.query</code>.
+The original action params are available under <code>req.owActionParams</code>.</p>
 <p><strong>Usage:</strong></p>
 <pre><code class="language-js">const { expressify, errorHandler } = require(&#39;@adobe/openwhisk-action-utils&#39;);
 
@@ -85,8 +85,8 @@ stream to the given helix logger.</p>
 Helper to turn a OpenWhisk web action into a express request which can be handled with normal
 express handlers.
 
-Expressify maps the query and action params to `req.query`. The original action params are
-available under `req.owActionParams`.
+Expressify maps the query and most of action params to `req.query`.
+The original action params are available under `req.owActionParams`.
 
 **Usage:**
 
@@ -150,7 +150,7 @@ async function main(params) {
 * [middleware](#module_middleware)
     * [~errorHandler(log)](#module_middleware..errorHandler) ⇒ <code>ExpressMiddleware</code>
     * [~cacheControl([value])](#module_middleware..cacheControl) ⇒ <code>ExpressMiddleware</code>
-    * [~logRequest(logger)](#module_middleware..logRequest) ⇒ <code>ExpressMiddleware</code>
+    * [~logRequest(logger, [level])](#module_middleware..logRequest) ⇒ <code>ExpressMiddleware</code>
     * [~asyncHandler(fn)](#module_middleware..asyncHandler) ⇒ <code>ExpressMiddleware</code>
     * [~ActionMiddlewareFunction](#module_middleware..ActionMiddlewareFunction) : <code>function</code>
 
@@ -192,7 +192,7 @@ app.use(cacheControl());
 ```
 <a name="module_middleware..logRequest"></a>
 
-### middleware~logRequest(logger) ⇒ <code>ExpressMiddleware</code>
+### middleware~logRequest(logger, [level]) ⇒ <code>ExpressMiddleware</code>
 Creates a bunyan child logger for the request and adds it to the request. This ensures that
 important header values, like `x-request-id` are included in every log entry. It also
 logs the request and response lines.
@@ -200,9 +200,10 @@ logs the request and response lines.
 **Kind**: inner method of [<code>middleware</code>](#module_middleware)  
 **Returns**: <code>ExpressMiddleware</code> - an express middleware function.  
 
-| Param | Type | Description |
-| --- | --- | --- |
-| logger | <code>BunyanLogger</code> | the bunyan logger |
+| Param | Type | Default | Description |
+| --- | --- | --- | --- |
+| logger | <code>BunyanLogger</code> |  | the bunyan logger |
+| [level] | <code>string</code> | <code>&quot;debug&quot;</code> | the log level to use for logging the request information. |
 
 **Example**  
 

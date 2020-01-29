@@ -73,9 +73,10 @@ export declare function cacheControl(value: string): ExpressMiddleware;
  * ```
  *
  * @param {BunyanLogger} logger - the bunyan logger
+ * @param {string} [level=debug] - the log level to use for logging the request information.
  * @returns {ExpressMiddleware} an express middleware function.
  */
-export declare function logRequest(logger: BunyanLogger): ExpressMiddleware;
+export declare function logRequest(logger: BunyanLogger, level?: string): ExpressMiddleware;
 
 /**
  * Wraps the route middleware so it can catch potential promise rejections during the async
