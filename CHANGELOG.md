@@ -1,3 +1,10 @@
+## [4.2.1](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.0...v4.2.1) (2020-03-06)
+
+
+### Bug Fixes
+
+* **middleware:** ensure that hideHeaders is exported ([cbada3a](https://github.com/adobe/openwhisk-action-utils/commit/cbada3ab1f2a562ae41542334f2db883a62c36c2))
+
 # [4.2.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.1.0...v4.2.0) (2020-03-06)
 
 
