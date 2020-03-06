@@ -16,7 +16,7 @@
 const assert = require('assert');
 const express = require('express');
 const bodyParser = require('body-parser');
-const expressify = require('../src/expressify.js');
+const { expressify } = require('../src/index.js');
 
 describe('Expressify', () => {
   it('handles simple get', async () => {

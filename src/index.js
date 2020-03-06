@@ -11,7 +11,7 @@
  */
 
 const {
-  errorHandler, cacheControl, logRequest, asyncHandler,
+  errorHandler, cacheControl, logRequest, asyncHandler, hideHeaders,
 } = require('./middleware.js');
 const expressify = require('./expressify.js');
 const { wrap } = require('./wrap');
@@ -22,6 +22,7 @@ module.exports = {
   errorHandler,
   cacheControl,
   asyncHandler,
+  hideHeaders,
   expressify,
   wrap,
   createBunyanLogger,

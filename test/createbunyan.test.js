@@ -13,7 +13,7 @@
 /* eslint-env mocha */
 const assert = require('assert');
 const { MemLogger } = require('@adobe/helix-log');
-const createBunyanLogger = require('../src/createBunyanLogger.js');
+const { createBunyanLogger } = require('../src/index.js');
 
 describe('Create Bunyan Logger', () => {
   let memLogger;

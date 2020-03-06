@@ -19,7 +19,7 @@ const bunyan = require('bunyan');
 const expressify = require('../src/expressify.js');
 const {
   errorHandler, cacheControl, asyncHandler, logRequest, hideHeaders,
-} = require('../src/middleware.js');
+} = require('../src/index.js');
 
 describe('Middleware', () => {
   let ringbuffer;
