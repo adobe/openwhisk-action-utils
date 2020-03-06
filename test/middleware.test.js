@@ -18,7 +18,7 @@ const express = require('express');
 const bunyan = require('bunyan');
 const expressify = require('../src/expressify.js');
 const {
-  errorHandler, cacheControl, asyncHandler, logRequest,
+  errorHandler, cacheControl, asyncHandler, logRequest, hideHeaders,
 } = require('../src/middleware.js');
 
 describe('Middleware', () => {
@@ -401,6 +401,37 @@ describe('Middleware', () => {
         etag: 'W/"2-eoX0dku9ba8cNUXvu/DyeabcC+s"',
       },
       statusCode: 200,
+    });
+  });
+
+  it('hideHeaders works', async () => {
+    const app = express();
+    const capturedHeaders = {};
+    app.use(hideHeaders(['x-token', 'authenticate', 'foo']));
+    app.use((req, res, next) => {
+      Object.entries(req.headers).forEach(([key, value]) => {
+        capturedHeaders[key] = value;
+      });
+      next();
+    });
+    app.get('/', (req, res) => {
+      res.send('ok');
+    });
+
+    const params = {
+      __ow_path: '/',
+      __ow_method: 'get',
+      __ow_headers: {
+        authenticate: 'Basic 1234',
+        'X-Token': 'secret',
+        'content-type': 'text/plain',
+      },
+    };
+    await expressify(app)(params);
+    assert.deepEqual(capturedHeaders, {
+      'content-length': 0,
+      'content-type': 'text/plain',
+      'x-request-id': undefined,
     });
   });
 });

@@ -79,6 +79,22 @@ export declare function cacheControl(value: string): ExpressMiddleware;
 export declare function logRequest(logger: BunyanLogger, level?: string): ExpressMiddleware;
 
 /**
+ * Hides headers from enumeration.
+ *
+ * @example <caption></caption>
+ *
+ * ```js
+ * // install first
+ * app.use(hideHeaders(['x-token', 'authentication'));
+ * app.use(logRequest(log));
+ * ```
+ *
+ * @param {string[]} headerNames Names of headers to make un-enumerable
+ * @returns {ExpressMiddleware} an express middleware function.
+ */
+export declare function hideHeaders(headerNames: string[]): ExpressMiddleware;
+
+/**
  * Wraps the route middleware so it can catch potential promise rejections during the async
  * invocation.
  *

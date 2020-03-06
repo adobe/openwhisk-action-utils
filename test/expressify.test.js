@@ -52,6 +52,35 @@ describe('Expressify', () => {
     });
   });
 
+  it('can handle non-web action invoke', async () => {
+    const app = express();
+    app.get('/', (req, res) => {
+      const dump = {
+        query: req.query,
+        test: req.owActionParams.__ow_path,
+      };
+      res.send(`${JSON.stringify(dump)}`);
+    });
+
+    const params = {
+      test: 'foo',
+      SUPER_SECRET: 'foo',
+    };
+
+    const result = await expressify(app)(params);
+
+    assert.deepEqual(result, {
+      body: '{"query":{"test":"foo"}}',
+      headers: {
+        'content-length': '24',
+        'content-type': 'text/html; charset=utf-8',
+        etag: 'W/"18-09GhnpJ6FHPbIDuBFoh/nHnBcDU"',
+        'x-powered-by': 'Express',
+      },
+      statusCode: 200,
+    });
+  });
+
   // eslint-disable-next-line no-restricted-syntax
   for (const __ow_path of [null, undefined, '', 'missing']) {
     it(`defaults to / for ${__ow_path === '' ? 'empty' : __ow_path} path`, async () => {
@@ -162,6 +191,37 @@ describe('Expressify', () => {
       __ow_path: '/data',
       __ow_method: 'post',
       __ow_body: Buffer.from('foo').toString('base64'),
+    };
+
+    const result = await expressify(app)(params);
+
+    assert.deepEqual(result, {
+      body: 'ok',
+      headers: {
+        'content-length': '2',
+        'content-type': 'text/html; charset=utf-8',
+        etag: 'W/"2-eoX0dku9ba8cNUXvu/DyeabcC+s"',
+        'x-powered-by': 'Express',
+      },
+      statusCode: 200,
+    });
+  });
+
+  it('handles POST body with unknown type', async () => {
+    const app = express();
+    app.use(bodyParser.raw({ type: () => true }));
+    app.post('/data', (req, res) => {
+      assert.equal(req.body.toString('utf8'), 'foo');
+      res.send('ok');
+    });
+
+    const params = {
+      __ow_path: '/data',
+      __ow_method: 'post',
+      __ow_headers: {
+        'content-type': 'text/unknown',
+      },
+      __ow_body: 'foo',
     };
 
     const result = await expressify(app)(params);
