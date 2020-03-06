@@ -150,6 +150,7 @@ async function main(params) {
 * [middleware](#module_middleware)
     * [~errorHandler(log)](#module_middleware..errorHandler) ⇒ <code>ExpressMiddleware</code>
     * [~cacheControl([value])](#module_middleware..cacheControl) ⇒ <code>ExpressMiddleware</code>
+    * [~hideHeaders(headerNames)](#module_middleware..hideHeaders) ⇒ <code>ExpressMiddleware</code>
     * [~logRequest(logger, [level])](#module_middleware..logRequest) ⇒ <code>ExpressMiddleware</code>
     * [~asyncHandler(fn)](#module_middleware..asyncHandler) ⇒ <code>ExpressMiddleware</code>
     * [~ActionMiddlewareFunction](#module_middleware..ActionMiddlewareFunction) : <code>function</code>
@@ -189,6 +190,25 @@ Ensures cache control. Sets cache control headers.
 
 ```
 app.use(cacheControl());
+```
+<a name="module_middleware..hideHeaders"></a>
+
+### middleware~hideHeaders(headerNames) ⇒ <code>ExpressMiddleware</code>
+Hides headers from enumeration.
+
+**Kind**: inner method of [<code>middleware</code>](#module_middleware)  
+**Returns**: <code>ExpressMiddleware</code> - an express middleware function.  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| headerNames | <code>Array.&lt;string&gt;</code> | Names of headers to make un-enumerable |
+
+**Example**  
+
+```js
+// install first
+app.use(hideHeaders(['x-token', 'authentication'));
+app.use(logRequest(log));
 ```
 <a name="module_middleware..logRequest"></a>
 

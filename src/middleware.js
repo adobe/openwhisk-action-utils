@@ -103,6 +103,35 @@ function cacheControl(value = 'no-store, private, must-revalidate') {
 }
 
 /**
+ * Hides headers from enumeration.
+ *
+ * @example <caption></caption>
+ *
+ * ```js
+ * // install first
+ * app.use(hideHeaders(['x-token', 'authentication'));
+ * app.use(logRequest(log));
+ * ```
+ *
+ * @param {string[]} headerNames Names of headers to make un-enumerable
+ * @returns {ExpressMiddleware} an express middleware function.
+ */
+function hideHeaders(headerNames) {
+  return (req, res, next) => {
+    const { headers } = req;
+    headerNames.forEach((name) => {
+      if (name in headers) {
+        Object.defineProperty(headers, name, {
+          enumerable: false,
+          value: headers[name],
+        });
+      }
+    });
+    next();
+  };
+}
+
+/**
  * Creates a bunyan child logger for the request and adds it to the request. This ensures that
  * important header values, like `x-request-id` are included in every log entry. It also
  * logs the request and response lines.
@@ -170,4 +199,5 @@ module.exports = {
   cacheControl,
   logRequest,
   asyncHandler,
+  hideHeaders,
 };

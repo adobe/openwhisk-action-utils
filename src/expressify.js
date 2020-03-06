@@ -91,7 +91,7 @@ function expressify(app) {
     }
 
     const event = {
-      httpMethod: params.__ow_method.toUpperCase(),
+      httpMethod: (params.__ow_method || 'GET').toUpperCase(),
       path: params.__ow_path || '/',
       body: params.__ow_body,
       headers: params.__ow_headers,
