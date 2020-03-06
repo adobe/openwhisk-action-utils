@@ -1,3 +1,10 @@
+# [4.2.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.1.0...v4.2.0) (2020-03-06)
+
+
+### Features
+
+* **middleware:** add function to make headers un-enumerable ([#71](https://github.com/adobe/openwhisk-action-utils/issues/71)) ([356614d](https://github.com/adobe/openwhisk-action-utils/commit/356614ddd024574f1dd02713c67d48c5246f666f))
+
 # [4.1.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.0.0...v4.1.0) (2020-01-29)
 
 
