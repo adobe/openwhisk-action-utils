@@ -18,6 +18,7 @@ const { BunyanStreamInterface, eraseBunyanDefaultFields, rootLogger } = require(
  */
 const serializers = {
   res: (res) => {
+    /* istanbul ignore next */
     if (!res || !res.statusCode) {
       return res;
     }
