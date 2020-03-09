@@ -1,3 +1,10 @@
+## [4.2.2](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.1...v4.2.2) (2020-03-09)
+
+
+### Bug Fixes
+
+* **expressify:** should handle non-web actions correctly ([a11e4c9](https://github.com/adobe/openwhisk-action-utils/commit/a11e4c96dc7b503e8b046acffb856792672e1e5b)), closes [#72](https://github.com/adobe/openwhisk-action-utils/issues/72)
+
 ## [4.2.1](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.0...v4.2.1) (2020-03-06)
 
 
