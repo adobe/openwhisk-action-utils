@@ -54,7 +54,7 @@ describe('Expressify', () => {
 
   it('can handle non-web action invoke', async () => {
     const app = express();
-    app.get('/', (req, res) => {
+    app.post('/', (req, res) => {
       const dump = {
         query: req.query,
         test: req.owActionParams.__ow_path,
