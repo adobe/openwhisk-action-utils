@@ -3,8 +3,13 @@
   "version": "4.2.2",
   "description": "Utilities for OpenWhisk Actions",
   "license": "Apache-2.0",
-  "repository": "https://github.com/adobe/openwhisk-action-utils",
-  "bugs": "https://github.com/adobe/openwhisk-action-utils/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/adobe/openwhisk-action-utils.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adobe/openwhisk-action-utils/issues"
+  },
   "keywords": [
     "openwhisk"
   ],
@@ -53,5 +58,6 @@
     "ghooks": {
       "pre-commit": "npx lint-staged"
     }
-  }
+  },
+  "homepage": "https://github.com/adobe/openwhisk-action-utils#readme"
 }
