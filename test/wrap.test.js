@@ -75,7 +75,6 @@ describe('Wrapper Tests', () => {
     const original2 = (name) => `hi ${name}`;
     const wrapper2 = (fn, lastname) => (firstname) => fn(`${firstname} and ${lastname}`);
 
-
     const wrapped1 = wrap(original1)
       .with(wrapper1, 'Paul');
 
