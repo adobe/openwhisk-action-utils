@@ -1,3 +1,10 @@
+## [4.2.3](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.2...v4.2.3) (2020-06-29)
+
+
+### Bug Fixes
+
+* **deps:** update external ([#98](https://github.com/adobe/openwhisk-action-utils/issues/98)) ([c4bd93b](https://github.com/adobe/openwhisk-action-utils/commit/c4bd93b6687b0e2f5b1afffdbd1cdf4497b4bdd1))
+
 ## [4.2.2](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.1...v4.2.2) (2020-03-09)
 
 
