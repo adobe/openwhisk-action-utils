@@ -6,7 +6,6 @@
 [![GitHub issues](https://img.shields.io/github/issues/adobe/openwhisk-action-utils.svg)](https://github.com/adobe/openwhisk-action-utils/issues)
 [![CircleCI](https://img.shields.io/circleci/project/github/adobe/openwhisk-action-utils.svg)](https://circleci.com/gh/adobe/openwhisk-action-utils)
 [![codecov](https://img.shields.io/codecov/c/github/adobe/openwhisk-action-utils.svg)](https://codecov.io/gh/adobe/openwhisk-action-utils)
-
 [![LGTM Code Quality Grade: JavaScript](https://img.shields.io/lgtm/grade/javascript/g/adobe/openwhisk-action-utils.svg?logo=lgtm&logoWidth=18)](https://lgtm.com/projects/g/adobe/openwhisk-action-utils)
 
 # API Reference
@@ -67,6 +66,15 @@ module.exports.main = wrap(main)
   .with(epsagon)
   .with(status)
   .with(logger);</code></pre>
+</dd>
+</dl>
+
+## Classes
+
+<dl>
+<dt><a href="#VersionLock">VersionLock</a></dt>
+<dd><p>Helper class that uses the information in the <code>x-ow-version-lock</code> header to lock the version
+of an openwhisk action.</p>
 </dd>
 </dl>
 
@@ -365,6 +373,64 @@ function tracer(fn, level) {
   }
 }
 ```
+<a name="VersionLock"></a>
+
+## VersionLock
+Helper class that uses the information in the `x-ow-version-lock` header to lock the version
+of an openwhisk action.
+
+**Kind**: global class  
+
+* [VersionLock](#VersionLock)
+    * [new VersionLock(params, defaults)](#new_VersionLock_new)
+    * _instance_
+        * [.transformActionURL(url)](#VersionLock+transformActionURL)
+        * [.wrapOpenwhisk(ow)](#VersionLock+wrapOpenwhisk) ⇒ <code>OpenWhisk</code>
+    * _static_
+        * [.X_OW_VERSION_LOCK](#VersionLock.X_OW_VERSION_LOCK) ⇒ <code>string</code>
+
+<a name="new_VersionLock_new"></a>
+
+### new VersionLock(params, defaults)
+Creates a version lock class.
+
+
+| Param | Type | Description |
+| --- | --- | --- |
+| params | <code>object</code> | the openwhisk action params |
+| defaults | <code>object</code> | the action name defaults. |
+
+<a name="VersionLock+transformActionURL"></a>
+
+### versionLock.transformActionURL(url)
+Transforms an action url according to the lock information.
+
+**Kind**: instance method of [<code>VersionLock</code>](#VersionLock)  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| url | <code>string</code> | the action url. |
+
+<a name="VersionLock+wrapOpenwhisk"></a>
+
+### versionLock.wrapOpenwhisk(ow) ⇒ <code>OpenWhisk</code>
+Enhances an openwhisk client by wrapping the `invoke` method for automatic action name
+replacement.
+
+**Kind**: instance method of [<code>VersionLock</code>](#VersionLock)  
+**Returns**: <code>OpenWhisk</code> - the wrapped client  
+
+| Param | Type | Description |
+| --- | --- | --- |
+| ow | <code>OpenWhisk</code> | openwhisk client |
+
+<a name="VersionLock.X_OW_VERSION_LOCK"></a>
+
+### VersionLock.X\_OW\_VERSION\_LOCK ⇒ <code>string</code>
+The name of the version lock header.
+
+**Kind**: static property of [<code>VersionLock</code>](#VersionLock)  
+**Returns**: <code>string</code> - 'x-ow-version-lock'  
 <a name="createBunyanLogger"></a>
 
 ## createBunyanLogger([logger]) ⇒ <code>BunyanLogger</code>
