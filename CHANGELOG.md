@@ -1,3 +1,10 @@
+# [4.3.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.3...v4.3.0) (2020-09-04)
+
+
+### Features
+
+* **ow:** add verion-lock helper ([#110](https://github.com/adobe/openwhisk-action-utils/issues/110)) ([4a22a3f](https://github.com/adobe/openwhisk-action-utils/commit/4a22a3fdab93274c1d186b299f9e5c8039aa1b91)), closes [#109](https://github.com/adobe/openwhisk-action-utils/issues/109)
+
 ## [4.2.3](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.2...v4.2.3) (2020-06-29)
 
 
