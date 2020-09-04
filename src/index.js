@@ -16,6 +16,7 @@ const {
 const expressify = require('./expressify.js');
 const { wrap } = require('./wrap');
 const createBunyanLogger = require('./createBunyanLogger.js');
+const VersionLock = require('./version-lock.js');
 
 module.exports = {
   logRequest,
@@ -26,4 +27,5 @@ module.exports = {
   expressify,
   wrap,
   createBunyanLogger,
+  VersionLock,
 };

@@ -13,3 +13,4 @@ export * from './wrap';
 export * from './expressify';
 export * from './middleware';
 export * from './createBunyanLogger';
+export * from './version-lock';
