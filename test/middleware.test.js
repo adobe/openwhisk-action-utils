@@ -431,7 +431,6 @@ describe('Middleware', () => {
     assert.deepEqual(capturedHeaders, {
       'content-length': 0,
       'content-type': 'text/plain',
-      'x-request-id': undefined,
     });
   });
 });
