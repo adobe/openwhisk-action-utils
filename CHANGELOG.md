@@ -1,3 +1,10 @@
+## [4.3.1](https://github.com/adobe/openwhisk-action-utils/compare/v4.3.0...v4.3.1) (2020-09-29)
+
+
+### Bug Fixes
+
+* **deps:** update dependency @adobe/helix-log to v4.5.2 ([28b37e0](https://github.com/adobe/openwhisk-action-utils/commit/28b37e0fc893fd2105ec59f34f2c92d417a9c8c2))
+
 # [4.3.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.2.3...v4.3.0) (2020-09-04)
 
 
