@@ -105,13 +105,22 @@ describe('Version Lock Tests', () => {
     assert.equal(lock.getLockedActionName('a@v1'), 'a@1.2.3');
   });
 
-  it('supports generic names without version multi locks', async () => {
+  it('supports generic names without version', async () => {
     const lock = new VersionLock({
       __ow_headers: {
-        'x-ow-version-lock': 'foo=bar',
+        'x-ow-version-lock': 'foo=foo@1.2',
       },
     });
-    assert.equal(lock.getLockedActionName('foo@v1.0'), 'bar');
+    assert.equal(lock.getLockedActionName('foo@v1.0'), 'foo@1.2');
+  });
+
+  it('automatically prefixes action name for versions', async () => {
+    const lock = new VersionLock({
+      __ow_headers: {
+        'x-ow-version-lock': 'foo=v4',
+      },
+    });
+    assert.equal(lock.getLockedActionName('foo@v1.0'), 'foo@v4');
   });
 
   it('can create url with only name', async () => {
