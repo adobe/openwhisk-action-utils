@@ -1,3 +1,10 @@
+## [4.3.3](https://github.com/adobe/openwhisk-action-utils/compare/v4.3.2...v4.3.3) (2020-12-02)
+
+
+### Bug Fixes
+
+* **versionlock:** auto prefix version name ([#128](https://github.com/adobe/openwhisk-action-utils/issues/128)) ([d4743ca](https://github.com/adobe/openwhisk-action-utils/commit/d4743ca23dda8254148f6beee52952cb99433215)), closes [#127](https://github.com/adobe/openwhisk-action-utils/issues/127)
+
 ## [4.3.2](https://github.com/adobe/openwhisk-action-utils/compare/v4.3.1...v4.3.2) (2020-11-18)
 
 
