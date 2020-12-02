@@ -105,7 +105,11 @@ class VersionLock {
       // test un-versioned variant
       const idx = name.lastIndexOf('@');
       if (idx > 0) {
-        actionName = this._locks[name.substring(0, idx)];
+        const base = name.substring(0, idx);
+        actionName = this._locks[base];
+        if (actionName && actionName.indexOf('@') < 0) {
+          actionName = `${base}@${actionName}`;
+        }
       }
     }
     if (actionName) {
