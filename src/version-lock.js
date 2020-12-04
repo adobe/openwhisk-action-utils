@@ -9,6 +9,7 @@
  * OF ANY KIND, either express or implied. See the License for the specific language
  * governing permissions and limitations under the License.
  */
+/* eslint-disable no-underscore-dangle */
 const querystring = require('querystring');
 const path = require('path').posix;
 
@@ -36,12 +37,11 @@ class VersionLock {
     __ow_logger: logger = console,
     X_OW_VERSION_LOCK: lockParam,
   } = {}, defaults = {}) {
+    const apiHost = process.env.__OW_API_HOST || 'https://adobeioruntime.net';
     this._header = headers[VersionLock.X_OW_VERSION_LOCK] || lockParam || '';
     this._locks = querystring.parse(this._header);
-    // eslint-disable-next-line no-underscore-dangle
     this._defaults = {
-      api: 'https://adobeioruntime.net/api/v1',
-      // eslint-disable-next-line no-underscore-dangle
+      api: `${apiHost}/api/v1`,
       namespace: process.env.__OW_NAMESPACE || '',
       packageName: '',
       ...defaults,
