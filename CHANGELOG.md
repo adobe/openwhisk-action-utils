@@ -1,3 +1,10 @@
+# [4.4.0](https://github.com/adobe/openwhisk-action-utils/compare/v4.3.3...v4.4.0) (2020-12-04)
+
+
+### Features
+
+* **versionlock:** use api host from environment as default ([#130](https://github.com/adobe/openwhisk-action-utils/issues/130)) ([045df1a](https://github.com/adobe/openwhisk-action-utils/commit/045df1a62f527d4a4773784c17ceaed1147da5c0)), closes [#129](https://github.com/adobe/openwhisk-action-utils/issues/129)
+
 ## [4.3.3](https://github.com/adobe/openwhisk-action-utils/compare/v4.3.2...v4.3.3) (2020-12-02)
 
 
