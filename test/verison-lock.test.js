@@ -11,6 +11,7 @@
  */
 
 /* eslint-env mocha */
+/* eslint-disable no-underscore-dangle */
 
 const assert = require('assert');
 const VersionLock = require('../src/version-lock.js');
@@ -42,12 +43,11 @@ function openwhisk() {
 
 describe('Version Lock Tests', () => {
   beforeEach(() => {
-    // eslint-disable-next-line no-underscore-dangle
     process.env.__OW_NAMESPACE = 'test-namespace';
+    delete process.env.__OW_API_HOST;
   });
 
   afterEach(() => {
-    // eslint-disable-next-line no-underscore-dangle
     delete process.env.__OW_NAMESPACE;
   });
 
@@ -135,7 +135,6 @@ describe('Version Lock Tests', () => {
   });
 
   it('requires namespace', async () => {
-    // eslint-disable-next-line no-underscore-dangle
     delete process.env.__OW_NAMESPACE;
 
     const lock = new VersionLock({
@@ -157,7 +156,7 @@ describe('Version Lock Tests', () => {
     assert.throws(() => lock.createActionURL({}), new Error('action name missing.'));
   });
 
-  it('can create url can specify package name', async () => {
+  it('create url can specify package name', async () => {
     const lock = new VersionLock({
       __ow_headers: {
         'x-ow-version-lock': 'foo=bar&a@v1=a@1.2.3',
@@ -169,7 +168,7 @@ describe('Version Lock Tests', () => {
     }), 'https://adobeioruntime.net/api/v1/web/test-namespace/testing/a@1.2.3');
   });
 
-  it('can create url can specify namespace', async () => {
+  it('create url can specify namespace', async () => {
     const lock = new VersionLock({
       __ow_headers: {
         'x-ow-version-lock': 'foo=bar&a@v1=a@1.2.3',
@@ -179,6 +178,19 @@ describe('Version Lock Tests', () => {
       name: 'a@v1',
       namespace: 'testing',
     }), 'https://adobeioruntime.net/api/v1/web/testing/a@1.2.3');
+  });
+
+  it('create url honors api host from environment', async () => {
+    process.env.__OW_API_HOST = 'https://test.apihost.com';
+    const lock = new VersionLock({
+      __ow_headers: {
+        'x-ow-version-lock': 'foo=bar&a@v1=a@1.2.3',
+      },
+    });
+    assert.equal(lock.createActionURL({
+      name: 'a@v1',
+      namespace: 'testing',
+    }), 'https://test.apihost.com/api/v1/web/testing/a@1.2.3');
   });
 
   it('can create url with only name, given defaults', async () => {
