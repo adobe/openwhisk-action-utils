@@ -24,7 +24,7 @@
   },
   "dependencies": {
     "@adobe/helix-log": "4.5.3",
-    "bunyan": "1.8.14",
+    "bunyan": "1.8.15",
     "serverless-http": "2.6.0"
   },
   "devDependencies": {
