@@ -23,7 +23,7 @@
     "semantic-release": "semantic-release"
   },
   "dependencies": {
-    "@adobe/helix-log": "5.0.1",
+    "@adobe/helix-log": "5.0.2",
     "bunyan": "1.8.15",
     "serverless-http": "2.7.0"
   },
