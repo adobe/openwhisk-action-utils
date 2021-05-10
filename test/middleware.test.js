@@ -221,7 +221,7 @@ describe('Middleware', () => {
       statusCode: 500,
     });
     assert.equal(ringbuffer.records[0].msg, 'my error');
-    assert.ok(ringbuffer.records[1].msg.indexOf('at app.get') > 0);
+    assert.ok(ringbuffer.records[1].msg.indexOf('at app') > 0);
   });
 
   it('Error handler does not log stack trace on info', async () => {
