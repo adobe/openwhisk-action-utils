@@ -1,3 +1,10 @@
+## [4.4.8](https://github.com/adobe/openwhisk-action-utils/compare/v4.4.7...v4.4.8) (2022-04-11)
+
+
+### Bug Fixes
+
+* **deps:** update dependency serverless-http to v3 ([d6e9996](https://github.com/adobe/openwhisk-action-utils/commit/d6e99961fa5b48782f470923745e81d0f61c7439)), closes [#213](https://github.com/adobe/openwhisk-action-utils/issues/213)
+
 ## [4.4.7](https://github.com/adobe/openwhisk-action-utils/compare/v4.4.6...v4.4.7) (2021-10-20)
 
 
