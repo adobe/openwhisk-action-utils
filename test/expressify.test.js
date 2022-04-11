@@ -40,13 +40,56 @@ describe('Expressify', () => {
 
     const result = await expressify(app)(params);
 
+    result.body = JSON.parse(result.body);
+
     assert.deepEqual(result, {
-      body: '{"query":{"foo":"42","a":["1","2"]},"test":"/ping"}',
+      body: {
+        query: {
+          a: [
+            '1',
+            '2',
+          ],
+          foo: '42',
+        },
+        test: '/ping',
+      },
       headers: {
         'content-length': '51',
         'content-type': 'text/html; charset=utf-8',
-        etag: 'W/"33-zMD3V1aagE/Fph2VK4mzE96IU9s"',
+        etag: 'W/"33-xtcWKo7LZSOkP+tJjuZs02Hceis"',
         'x-powered-by': 'Express',
+      },
+      statusCode: 200,
+    });
+  });
+
+  it('can set multiple response cookies', async () => {
+    const app = express();
+    app.get('/ping', (req, res) => {
+      res.cookie('foo', 'one');
+      res.cookie('foo', 'two');
+      res.send('hello');
+    });
+
+    const params = {
+      __ow_path: '/ping',
+      __ow_method: 'get',
+      __ow_headers: {},
+      __ow_query: '',
+    };
+
+    const result = await expressify(app)(params);
+    assert.deepEqual(result, {
+      body: 'hello',
+      headers: {
+        'content-length': '5',
+        'content-type': 'text/html; charset=utf-8',
+        etag: 'W/"5-qvTGHdzF6KLavt4PO0gs2a6pQ00"',
+        'x-powered-by': 'Express',
+        'set-cookie': [
+          'foo=one; Path=/',
+          'foo=two; Path=/',
+        ],
       },
       statusCode: 200,
     });
