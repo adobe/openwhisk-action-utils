@@ -78,16 +78,27 @@ function expressify(app) {
     const isBase64Encoded = BINARY_CONTENT_TYPES.find((pat) => pat.test(contentType));
 
     // copy all params that do now start with __ow or are all upper case as query params
-    const query = {};
+    const svQuery = {};
+    const mvQuery = {};
     Object.entries(params).forEach(([key, value]) => {
       if (key.startsWith('__ow') || key.match(/^[A-Z0-9_]+$/)) {
         return;
       }
-      query[key] = value;
+      if (Array.isArray(value)) {
+        mvQuery[key] = value;
+      } else {
+        svQuery[key] = value;
+      }
     });
     // also check for a `__ow_query` in case of raw http actions
     if (params.__ow_query) {
-      Object.assign(query, querystring.parse(params.__ow_query || ''));
+      Object.entries(querystring.parse(params.__ow_query || '')).forEach(([key, value]) => {
+        if (Array.isArray(value)) {
+          mvQuery[key] = value;
+        } else {
+          svQuery[key] = value;
+        }
+      });
     }
 
     const event = {
@@ -96,10 +107,18 @@ function expressify(app) {
       body: params.__ow_body,
       headers: params.__ow_headers,
       isBase64Encoded,
-      queryStringParameters: query,
+      queryStringParameters: svQuery,
+      multiValueQueryStringParameters: mvQuery,
     };
     const result = await handler(event, {});
     delete result.isBase64Encoded;
+
+    // apply mv headers
+    if (result.multiValueHeaders) {
+      Object.assign(result.headers, result.multiValueHeaders);
+      delete result.multiValueHeaders;
+    }
+
     return result;
   };
 }
