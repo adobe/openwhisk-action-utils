@@ -38,7 +38,7 @@ async function main(params) {
   expressify, logRequest, errorHandler, asyncHandler, cacheControl, createBunyanLogger,
 } = require(&#39;@adobe/openwhisk-action-utils&#39;);
 
-async function startHandler(params, req, res) {
+async function startHandler(req, res) {
    res.send(&#39;Hello, world.&#39;);
 }
 async function main(params) {
@@ -138,7 +138,7 @@ const {
   expressify, logRequest, errorHandler, asyncHandler, cacheControl, createBunyanLogger,
 } = require('@adobe/openwhisk-action-utils');
 
-async function startHandler(params, req, res) {
+async function startHandler(req, res) {
    res.send('Hello, world.');
 }
 async function main(params) {
